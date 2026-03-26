@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Macro ETF Monitor — Mar 26, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--ink:#0e1117;--ink2:#161b25;--ink3:#1c2232;--rule:#212840;--rule2:#2a3350;--smoke:#9ba8c4;--mist:#5a6580;--ghost:#2e3a52;--bull:#1de9b6;--bull2:rgba(29,233,182,.08);--bear:#ff5370;--bear2:rgba(255,83,112,.08);--neut:#ffd740;--neut2:rgba(255,215,64,.08);--sky:#448aff;--sky2:rgba(68,138,255,.10);--r:8px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--smoke);font-family:'IBM Plex Sans',sans-serif;font-size:13px;line-height:1.6}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 36px;height:56px;border-bottom:1px solid var(--rule);background:rgba(14,17,23,.95);position:sticky;top:0;z-index:200}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:#e8eeff}.brand em{color:var(--bull);font-style:normal}
+.brand-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--mist);margin-left:12px}
+.regime-chip{display:flex;align-items:center;gap:7px;padding:5px 13px;border-radius:20px;background:var(--sky2);border:1px solid rgba(68,138,255,.3);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sky);letter-spacing:.8px}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--sky);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.wrap{max-width:1400px;margin:0 auto;padding:28px 36px 60px}
+.sec-head{display:flex;align-items:center;gap:10px;margin:28px 0 16px}.sec-head:first-child{margin-top:0}
+.sec-line{flex:1;height:1px;background:var(--rule)}
+.sec-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.8px;color:var(--mist);white-space:nowrap}
+.hero-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--ink2);border:1px solid var(--rule);border-radius:var(--r);padding:20px 22px}
+.card-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mist);margin-bottom:12px}
+.stat-big{font-family:'Syne',sans-serif;font-size:44px;font-weight:700;line-height:1;margin-bottom:8px}
+.stat-sub{font-size:11px;color:var(--mist);margin-top:6px}.stat-sub strong{color:var(--smoke)}
+.gauge{height:4px;border-radius:2px;background:var(--rule2);overflow:hidden;margin:10px 0 4px}
+.gauge-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--bear) 0%,var(--neut) 50%,var(--bull) 100%)}
+.gauge-ticks{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ghost)}
+.pills{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.pill{padding:3px 9px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500}
+.p-b{background:var(--bull2);color:var(--bull);border:1px solid rgba(29,233,182,.2)}
+.p-n{background:var(--neut2);color:var(--neut);border:1px solid rgba(255,215,64,.2)}
+.p-r{background:var(--bear2);color:var(--bear);border:1px solid rgba(255,83,112,.2)}
+.reg-bar{height:5px;border-radius:3px;background:var(--rule2);overflow:hidden;margin-top:10px}
+.reg-fill{height:100%;border-radius:3px;background:var(--sky);opacity:.7}
+.reg-labels{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--mist);margin-top:4px}
+.mini-list{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.mini-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;background:var(--ink3);border:1px solid var(--rule)}
+.mini-tkr{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:12px;color:#e8eeff;min-width:38px}
+.mini-name{flex:1;font-size:11px;color:var(--mist)}
+.mini-perf{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.pos{color:var(--bull)}.neg{color:var(--bear)}
+.content-row{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.chart-card,.mx-card{background:var(--ink2);border:1px solid var(--rule);border-radius:var(--r);padding:22px 24px}
+.chart-title{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mist);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.chart-legend{display:flex;gap:16px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--mist);font-family:'IBM Plex Mono',monospace}
+.leg-dot{width:8px;height:3px;border-radius:2px}
+.chart-wrap{height:130px;position:relative}
+.stat-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-top:14px}
+.sbi{background:var(--ink3);padding:10px 12px;text-align:center}
+.sbi-val{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;color:#e8eeff;display:block}
+.sbi-lbl{font-size:9px;color:var(--mist);margin-top:2px;text-transform:uppercase;letter-spacing:.8px;font-family:'IBM Plex Mono',monospace}
+.mx-title{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mist);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+.mx-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(33,40,64,.5)}.mx-row:last-child{border-bottom:none}
+.mx-name{flex:1;font-size:11.5px;color:var(--smoke)}
+.mx-bar{width:54px;height:3px;border-radius:2px;background:var(--rule2);overflow:hidden}
+.mx-fill{height:100%;border-radius:2px}
+.sig{min-width:56px;text-align:center;padding:2px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.5px}
+.sig-b{background:var(--bull2);color:var(--bull);border:1px solid rgba(29,233,182,.18)}
+.sig-r{background:var(--bear2);color:var(--bear);border:1px solid rgba(255,83,112,.18)}
+.sig-n{background:var(--neut2);color:var(--neut);border:1px solid rgba(255,215,64,.18)}
+.springs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.spr-card{background:var(--ink2);border:1px solid var(--rule);border-radius:var(--r);padding:16px;position:relative;overflow:hidden}
+.spr-accent{position:absolute;top:0;left:0;right:0;height:2px}
+.spr-cat{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--mist);margin-bottom:4px}
+.spr-tkr{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:#e8eeff;line-height:1;margin-bottom:2px}
+.spr-name{font-size:11px;color:var(--mist);margin-bottom:10px}
+.spr-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.spr-lbl{font-size:10px;color:var(--mist)}
+.spr-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500}
+.sv-up{color:var(--bull)}.sv-dn{color:var(--bear)}.sv-wh{color:var(--smoke)}
+.climb-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--bull)}
+.rank-bar{height:5px;border-radius:3px;background:var(--rule2);overflow:hidden;position:relative;margin-top:4px}
+.rb-ago{position:absolute;left:0;top:0;height:100%;border-radius:3px;background:var(--ghost)}
+.rb-now{position:absolute;left:0;top:0;height:100%;border-radius:3px;background:var(--bull)}
+.acc-row{display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
+.acc-item{text-align:center}
+.acc-lbl{font-size:9px;color:var(--mist);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.6px}
+.acc-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500}
+.etf-section{background:var(--ink2);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.cat-tabs{display:flex;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none}.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{padding:12px 20px;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mist);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;background:transparent;border-top:none;border-left:none;border-right:none;transition:color .15s}
+.cat-tab:hover{color:var(--smoke)}.cat-tab.on{color:var(--bull);border-bottom-color:var(--bull)}
+.cat-panel{display:none}.cat-panel.on{display:block}
+table.etf{width:100%;border-collapse:collapse}
+table.etf th{padding:9px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--mist);text-align:left;background:var(--ink3);border-bottom:1px solid var(--rule);white-space:nowrap}
+table.etf th.r{text-align:right}
+table.etf th[onclick]{cursor:pointer;user-select:none}
+table.etf th[onclick]:hover{color:var(--smoke);background:var(--rule)}
+table.etf td{padding:9px 14px;border-bottom:1px solid rgba(33,40,64,.6);font-size:12px;color:var(--smoke)}
+table.etf tr:last-child td{border-bottom:none}
+table.etf tr:hover td{background:rgba(255,255,255,.015)}
+table.etf td.r{text-align:right}
+.etf-tkr{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;color:#e8eeff}
+.etf-name{color:var(--mist);font-size:11px}
+.cx-cell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.cx-bar{width:48px;height:3px;border-radius:2px;background:var(--rule2);overflow:hidden}
+.cx-fill{height:100%;border-radius:2px}
+.rb{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:1px 6px;border-radius:3px}
+.rb-up{background:var(--bull2);color:var(--bull)}.rb-dn{background:var(--bear2);color:var(--bear)}.rb-flat{background:var(--rule);color:var(--mist)}
+.foot{margin-top:40px;padding:16px 0;border-top:1px solid var(--rule);display:flex;justify-content:space-between}
+.foot-note{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--mist)}
+@media(max-width:1100px){.hero-row{grid-template-columns:1fr 1fr}.content-row{grid-template-columns:1fr}.springs-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.wrap{padding:16px}.topbar{padding:0 16px}.hero-row{grid-template-columns:1fr}.springs-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div style="display:flex;align-items:baseline;gap:4px">
+    <div class="brand">Macro <em>ETF</em> Monitor</div>
+    <div class="brand-date">Mar 26, 2026 · Python + Yahoo Finance</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mist)">Regime avg: <strong style="color:var(--neut)">43 days</strong> · Day 20</span>
+    <div class="regime-chip"><div class="pulse"></div>BONDS REGIME</div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="sec-head"><div class="sec-label">Market Overview</div><div class="sec-line"></div></div>
+  <div class="hero-row">
+    <div class="card">
+      <div class="card-tag">Trend Score</div>
+      <div class="stat-big" style="color:var(--bear)">10%</div>
+      <div class="gauge"><div class="gauge-fill" style="width:10%"></div></div>
+      <div class="gauge-ticks"><span>Bearish</span><span>Neutral</span><span>Bullish</span></div>
+      <div class="stat-sub">Threshold: <strong>70%</strong> · Regime switch point</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Matrix Score</div>
+      <div class="stat-big" style="color:var(--bear)">-6</div>
+      <div class="pills">
+        <span class="pill p-b">3 Bullish</span>
+        <span class="pill p-n">5 Neutral</span>
+        <span class="pill p-r">9 Bearish</span>
+      </div>
+      <div class="stat-sub">17 macro indicators · Risk-on/off signal</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Current Regime</div>
+      <div class="stat-big" style="color:var(--sky);font-size:32px;margin-top:4px">BONDS</div>
+      <div class="reg-bar"><div class="reg-fill" style="width:46%"></div></div>
+      <div class="reg-labels"><span>Day 20 of ~43 avg</span><span>~23 days to avg</span></div>
+      <div class="stat-sub">Bonds → Stocks threshold: <strong>70%</strong> for 20+ days</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Exponential Regression Ranking — Top 4</div>
+      <div class="mini-list"><div class="mini-row"><span class="mini-tkr">EWY</span><span class="mini-name">South Korea</span><span class="mini-perf pos">#1 · Score 2.97</span></div>
+<div class="mini-row"><span class="mini-tkr">IEZ</span><span class="mini-name">US Oil Equipment</span><span class="mini-perf pos">#2 · Score 2.05</span></div>
+<div class="mini-row"><span class="mini-tkr">IYE</span><span class="mini-name">US Energy</span><span class="mini-perf pos">#3 · Score 1.45</span></div>
+<div class="mini-row"><span class="mini-tkr">ENOR</span><span class="mini-name">Norway</span><span class="mini-perf pos">#4 · Score 1.42</span></div></div>
+    </div>
+  </div>
+
+  <div class="sec-head" style="margin-top:28px"><div class="sec-label">Trend History &amp; Matrix Signals</div><div class="sec-line"></div></div>
+  <div class="content-row">
+    <div class="chart-card">
+      <div class="chart-title">
+        <span>Trend Score — Last 20 Trading Days</span>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--sky)"></div>Bonds</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--bull)"></div>Stocks</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      <div class="stat-box">
+        <div class="sbi"><span class="sbi-val" style="color:var(--sky)">20 days</span><span class="sbi-lbl">In Bonds</span></div>
+        <div class="sbi"><span class="sbi-val" style="color:var(--neut)">43 days</span><span class="sbi-lbl">Avg. Duration</span></div>
+        <div class="sbi"><span class="sbi-val" style="color:var(--bear)">10%</span><span class="sbi-lbl">Score Today</span></div>
+      </div>
+    </div>
+    <div class="mx-card">
+      <div class="mx-title">Matrix Indicators — All 17</div>
+      <div id="matrixList" style="max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--rule2) transparent"></div>
+    </div>
+  </div>
+
+  <div class="sec-head" style="margin-top:28px">
+    <div class="sec-label">Coiled Springs — 30D Variation in Ranking</div>
+    <div class="sec-line"></div>
+  </div>
+  <p style="font-size:12px;color:var(--mist);margin-bottom:14px;max-width:700px">ETFs gaining the most ranking positions over the last 30 trading days. Ranking = annualised log-linear slope × R² over 91 days.</p>
+  <div class="springs-grid" id="springsGrid"></div>
+
+  <div class="sec-head" style="margin-top:28px"><div class="sec-label">ETF Rankings by Category</div><div class="sec-line"></div></div>
+  <div class="etf-section">
+    <div class="cat-tabs" id="catTabs"></div>
+    <div id="catPanels"></div>
+  </div>
+</div>
+<footer style="max-width:1400px;margin:0 auto;padding:0 36px">
+  <div class="foot">
+    <div class="foot-note">Data: Yahoo Finance · Acc/Dist ±1.5% · Vol ×1.1 · SMA50 · Matrix band ±1%</div>
+    <div class="foot-note">Exp. Regression: log-linear slope × R² · 91-day window · 120 ETFs · Mar 26, 2026</div>
+  </div>
+</footer>
+<script>
+const TREND_HISTORY=[{"d":"Feb 27","s":0.4},{"d":"Mar 02","s":0.4},{"d":"Mar 03","s":0.4},{"d":"Mar 04","s":0.2},{"d":"Mar 05","s":0.5},{"d":"Mar 06","s":0.4},{"d":"Mar 09","s":0.2},{"d":"Mar 10","s":0.2},{"d":"Mar 11","s":0.2},{"d":"Mar 12","s":0.2},{"d":"Mar 13","s":0.2},{"d":"Mar 16","s":0.2},{"d":"Mar 17","s":0.2},{"d":"Mar 18","s":0.2},{"d":"Mar 19","s":0.2},{"d":"Mar 20","s":0.2},{"d":"Mar 23","s":0.2},{"d":"Mar 24","s":0.2},{"d":"Mar 25","s":0.1},{"d":"Mar 26","s":0.1}];
+const MATRIX=[{"n":"S&P Momentum","sig":"Bearish","f":-1,"pct":0},{"n":"High Yield vs Treasuries","sig":"Neutral","f":0,"pct":46},{"n":"Small Cap vs Large Cap","sig":"Bullish","f":1,"pct":100},{"n":"Growth vs Value","sig":"Bearish","f":-1,"pct":0},{"n":"IBD 50 vs S&P","sig":"Neutral","f":0,"pct":55},{"n":"Consumer Discr. vs Staples","sig":"Bearish","f":-1,"pct":0},{"n":"Consumer Svcs vs Utils","sig":"Bearish","f":-1,"pct":0},{"n":"Emerging Markets vs S&P","sig":"Bullish","f":1,"pct":100},{"n":"High Beta Growth vs S&P","sig":"Bearish","f":-1,"pct":0},{"n":"QQQJ vs QQQ","sig":"Bullish","f":1,"pct":100},{"n":"Argentina vs S&P","sig":"Neutral","f":0,"pct":74},{"n":"S&P vs Treasuries 20YR","sig":"Bearish","f":-1,"pct":0},{"n":"Silver vs Gold","sig":"Neutral","f":0,"pct":71},{"n":"Copper vs Gold","sig":"Neutral","f":0,"pct":30},{"n":"Wood vs Gold","sig":"Bearish","f":-1,"pct":0},{"n":"Stocks vs Gold","sig":"Bearish","f":-1,"pct":0},{"n":"Stocks vs Commodities","sig":"Bearish","f":-1,"pct":0}];
+const SPRINGS=[{"tkr":"IDGT","name":"Digital Infrastructure","cat":"Industry / Sector","y":0.2947,"m1":0.0064,"cx":0.4868,"cx30":-0.0,"r":22,"r30":102,"climb":80,"n50":-1,"n20":-1,"n5":0,"col":"#c6ff00"},{"tkr":"IDU","name":"US Utilities","cat":"Industry / Sector","y":0.1825,"m1":-0.0373,"cx":0.1381,"cx30":-0.0518,"r":40,"r30":114,"climb":74,"n50":0,"n20":0,"n5":0,"col":"#1de9b6"},{"tkr":"EWA","name":"Australia","cat":"Country / Region","y":0.1895,"m1":-0.0907,"cx":0.4376,"cx30":0.0377,"r":24,"r30":87,"climb":63,"n50":-1,"n20":-1,"n5":1,"col":"#ffd740"},{"tkr":"FFTY","name":"IBD 50 ETF","cat":"Industry / Sector","y":0.2275,"m1":-0.1592,"cx":0.1222,"cx30":-0.0064,"r":46,"r30":109,"climb":63,"n50":-1,"n20":0,"n5":0,"col":"#448aff"},{"tkr":"IEO","name":"Oil & Gas Prod.","cat":"Industry / Sector","y":0.3835,"m1":0.2167,"cx":1.0697,"cx30":0.1206,"r":7,"r30":67,"climb":60,"n50":1,"n20":0,"n5":0,"col":"#c6ff00"},{"tkr":"SNSR","name":"Internet of Things","cat":"Industry / Sector","y":0.0974,"m1":-0.0661,"cx":0.1085,"cx30":-0.0,"r":50,"r30":102,"climb":52,"n50":1,"n20":1,"n5":0,"col":"#1de9b6"},{"tkr":"GSG","name":"Commodities","cat":"Commodity / REIT","y":0.3854,"m1":0.214,"cx":1.0302,"cx30":0.1683,"r":10,"r30":60,"climb":50,"n50":2,"n20":2,"n5":0,"col":"#ffd740"},{"tkr":"SPLV","name":"Defensive Equity","cat":"Style","y":0.0145,"m1":-0.0453,"cx":0.1189,"cx30":0.0181,"r":48,"r30":92,"climb":44,"n50":0,"n20":0,"n5":0,"col":"#448aff"}];
+const CAT_DATA={
+  "Country / Region":[{"tkr":"EWY","name":"South Korea","y":1.2008,"m3":0.3251,"m1":-0.175,"cx":2.9678,"r":1,"r30":4,"climb":3,"n50":0,"n20":-5,"n5":-1,"e20":-5.82,"s50":-4.36},{"tkr":"ENOR","name":"Norway","y":0.3877,"m3":0.2317,"m1":0.0306,"cx":1.4155,"r":4,"r30":45,"climb":41,"n50":0,"n20":0,"n5":-1,"e20":1.68,"s50":6.29},{"tkr":"EPU","name":"Peru","y":0.7587,"m3":0.0683,"m1":-0.1673,"cx":1.0706,"r":6,"r30":2,"climb":-4,"n50":3,"n20":-1,"n5":1,"e20":-4.41,"s50":-9.62},{"tkr":"EWT","name":"Taiwan","y":0.4715,"m3":0.1358,"m1":-0.0788,"cx":0.7347,"r":13,"r30":54,"climb":41,"n50":2,"n20":-1,"n5":1,"e20":-0.78,"s50":-0.14},{"tkr":"EWZ","name":"Brazil","y":0.4849,"m3":0.1797,"m1":-0.0601,"cx":0.6457,"r":15,"r30":11,"climb":-4,"n50":7,"n20":-2,"n5":0,"e20":0.78,"s50":0.22},{"tkr":"TUR","name":"Turkey","y":0.1896,"m3":0.0867,"m1":-0.0814,"cx":0.6145,"r":16,"r30":15,"climb":-1,"n50":-3,"n20":-2,"n5":0,"e20":-3.02,"s50":-5.25},{"tkr":"EIS","name":"Israel","y":0.5669,"m3":0.0639,"m1":-0.0096,"cx":0.5885,"r":17,"r30":9,"climb":-8,"n50":-3,"n20":0,"n5":0,"e20":-1.1,"s50":-1.17},{"tkr":"THD","name":"Thailand","y":0.2852,"m3":0.0864,"m1":-0.1129,"cx":0.5601,"r":18,"r30":61,"climb":43,"n50":1,"n20":-2,"n5":1,"e20":-1.32,"s50":-1.19},{"tkr":"ILF","name":"Latin America","y":0.4928,"m3":0.129,"m1":-0.0746,"cx":0.5573,"r":19,"r30":7,"climb":-12,"n50":2,"n20":-1,"n5":0,"e20":0.34,"s50":-1.67},{"tkr":"EWA","name":"Australia","y":0.1895,"m3":0.0306,"m1":-0.0907,"cx":0.4376,"r":24,"r30":87,"climb":63,"n50":-1,"n20":-1,"n5":1,"e20":-3.05,"s50":-3.48},{"tkr":"EWM","name":"Malaysia","y":0.2838,"m3":0.0412,"m1":-0.0448,"cx":0.3763,"r":27,"r30":27,"climb":0,"n50":1,"n20":-1,"n5":-1,"e20":-1.26,"s50":-1.69},{"tkr":"EWW","name":"Mexico","y":0.4644,"m3":0.0448,"m1":-0.0774,"cx":0.3286,"r":28,"r30":18,"climb":-10,"n50":-2,"n20":-3,"n5":0,"e20":0.09,"s50":-3.02},{"tkr":"ASEA","name":"Southeast Asia","y":0.2801,"m3":0.0396,"m1":-0.0668,"cx":0.3013,"r":29,"r30":25,"climb":-4,"n50":-1,"n20":-1,"n5":0,"e20":-0.7,"s50":-1.77},{"tkr":"EWU","name":"United Kingdom","y":0.2284,"m3":0.0107,"m1":-0.0865,"cx":0.277,"r":30,"r30":33,"climb":3,"n50":-2,"n20":-2,"n5":-1,"e20":-2.6,"s50":-4.13},{"tkr":"EFNL","name":"Finland","y":0.3333,"m3":0.0254,"m1":-0.0511,"cx":0.2501,"r":31,"r30":24,"climb":-7,"n50":0,"n20":0,"n5":0,"e20":-0.78,"s50":-2.03},{"tkr":"EEM","name":"Emerging Markets","y":0.2877,"m3":0.0337,"m1":-0.1133,"cx":0.2494,"r":32,"r30":47,"climb":15,"n50":2,"n20":-3,"n5":-1,"e20":-3.15,"s50":-5.33},{"tkr":"EWH","name":"Hong Kong","y":0.3564,"m3":0.0481,"m1":-0.0463,"cx":0.2323,"r":33,"r30":39,"climb":6,"n50":-2,"n20":-2,"n5":0,"e20":-0.89,"s50":-1.96},{"tkr":"EEMA","name":"EM Asia","y":0.2741,"m3":0.0246,"m1":-0.1174,"cx":0.2157,"r":34,"r30":59,"climb":25,"n50":0,"n20":-2,"n5":-1,"e20":-3.53,"s50":-5.68},{"tkr":"EWC","name":"Canada","y":0.3223,"m3":-0.0044,"m1":-0.0571,"cx":0.2049,"r":35,"r30":31,"climb":-4,"n50":1,"n20":0,"n5":1,"e20":-1.77,"s50":-2.74},{"tkr":"EWJ","name":"Japan","y":0.2208,"m3":0.0312,"m1":-0.0948,"cx":0.1943,"r":36,"r30":46,"climb":10,"n50":-5,"n20":-5,"n5":-1,"e20":-1.89,"s50":-4.15},{"tkr":"EPOL","name":"Poland","y":0.2741,"m3":0.0079,"m1":-0.089,"cx":0.1764,"r":38,"r30":19,"climb":-19,"n50":0,"n20":-1,"n5":-1,"e20":-1.16,"s50":-4.2},{"tkr":"EWO","name":"Austria","y":0.3918,"m3":-0.0011,"m1":-0.0922,"cx":0.1501,"r":39,"r30":8,"climb":-31,"n50":2,"n20":-2,"n5":-1,"e20":-0.99,"s50":-4.98},{"tkr":"EWD","name":"Sweden","y":0.1084,"m3":-0.0282,"m1":-0.1166,"cx":0.1303,"r":42,"r30":38,"climb":-4,"n50":-5,"n20":-4,"n5":0,"e20":-4.2,"s50":-7.88},{"tkr":"EZA","name":"South Africa","y":0.4462,"m3":-0.066,"m1":-0.1909,"cx":0.1224,"r":45,"r30":10,"climb":-35,"n50":2,"n20":-1,"n5":1,"e20":-5.37,"s50":-11.46},{"tkr":"EWN","name":"Netherlands","y":0.2462,"m3":0.012,"m1":-0.098,"cx":0.1203,"r":47,"r30":51,"climb":4,"n50":-1,"n20":-2,"n5":0,"e20":-2.67,"s50":-5.81},{"tkr":"EWP","name":"Spain","y":0.3933,"m3":-0.0203,"m1":-0.0953,"cx":0.0848,"r":51,"r30":22,"climb":-29,"n50":-1,"n20":-2,"n5":0,"e20":-1.88,"s50":-4.46},{"tkr":"ECH","name":"Chile","y":0.2925,"m3":-0.0267,"m1":-0.133,"cx":0.061,"r":58,"r30":3,"climb":-55,"n50":1,"n20":-1,"n5":0,"e20":-3.15,"s50":-9.72},{"tkr":"EPHE","name":"Philippines","y":-0.0018,"m3":-0.0108,"m1":-0.1308,"cx":0.0535,"r":59,"r30":66,"climb":7,"n50":-3,"n20":-1,"n5":1,"e20":-2.48,"s50":-5.7},{"tkr":"EWL","name":"Switzerland","y":0.1135,"m3":-0.0414,"m1":-0.1072,"cx":0.0494,"r":60,"r30":37,"climb":-23,"n50":-4,"n20":-4,"n5":0,"e20":-2.57,"s50":-5.83},{"tkr":"EWK","name":"Belgium","y":0.2033,"m3":-0.0198,"m1":-0.1261,"cx":0.0439,"r":62,"r30":41,"climb":-21,"n50":-1,"n20":-1,"n5":0,"e20":-3.22,"s50":-7.58},{"tkr":"EWS","name":"Singapore","y":0.2045,"m3":0.0067,"m1":-0.0403,"cx":0.0224,"r":68,"r30":98,"climb":30,"n50":-1,"n20":-3,"n5":-2,"e20":-0.44,"s50":-1.67},{"tkr":"EWI","name":"Italy","y":0.2276,"m3":-0.0496,"m1":-0.1026,"cx":0.014,"r":73,"r30":34,"climb":-39,"n50":-2,"n20":-1,"n5":2,"e20":-2.63,"s50":-5.89},{"tkr":"GREK","name":"Greece","y":0.3392,"m3":-0.0623,"m1":-0.124,"cx":0.0105,"r":78,"r30":26,"climb":-52,"n50":-2,"n20":-3,"n5":0,"e20":-3.93,"s50":-10.06},{"tkr":"URTH","name":"World","y":0.1557,"m3":-0.0412,"m1":-0.0669,"cx":0.0046,"r":83,"r30":65,"climb":-18,"n50":-1,"n20":-1,"n5":0,"e20":-2.18,"s50":-4.31},{"tkr":"ECNS","name":"China Small Cap","y":0.2226,"m3":-0.0364,"m1":-0.1246,"cx":0.0043,"r":84,"r30":108,"climb":24,"n50":1,"n20":0,"n5":0,"e20":-4.57,"s50":-8.01},{"tkr":"ENZL","name":"New Zealand","y":0.0433,"m3":-0.0498,"m1":-0.0825,"cx":0.0015,"r":87,"r30":84,"climb":-3,"n50":-1,"n20":-1,"n5":-1,"e20":-2.88,"s50":-5.89},{"tkr":"EWQ","name":"France","y":0.0621,"m3":-0.0512,"m1":-0.1129,"cx":0.0004,"r":92,"r30":76,"climb":-16,"n50":-1,"n20":-1,"n5":1,"e20":-2.72,"s50":-6.05},{"tkr":"EWG","name":"Germany","y":0.0301,"m3":-0.0836,"m1":-0.1231,"cx":0.0003,"r":93,"r30":75,"climb":-18,"n50":-1,"n20":-1,"n5":1,"e20":-3.9,"s50":-8.39},{"tkr":"IVV","name":"S&P 500","y":0.1461,"m3":-0.0505,"m1":-0.0577,"cx":-0.0,"r":97,"r30":77,"climb":-20,"n50":-1,"n20":-1,"n5":0,"e20":-2.06,"s50":-4.09},{"tkr":"ARGT","name":"Argentina","y":0.0348,"m3":-0.0208,"m1":-0.0338,"cx":-0.0001,"r":100,"r30":12,"climb":-88,"n50":2,"n20":1,"n5":1,"e20":1.15,"s50":-2.74},{"tkr":"EIRL","name":"Ireland","y":0.1682,"m3":-0.0749,"m1":-0.0644,"cx":-0.0001,"r":100,"r30":28,"climb":-72,"n50":1,"n20":-1,"n5":0,"e20":-1.2,"s50":-5.22},{"tkr":"MCHI","name":"China Mid Cap","y":0.0284,"m3":-0.088,"m1":-0.088,"cx":-0.0709,"r":111,"r30":112,"climb":1,"n50":-1,"n20":0,"n5":0,"e20":-3.55,"s50":-7.66},{"tkr":"INDA","name":"India","y":-0.0957,"m3":-0.136,"m1":-0.1077,"cx":-0.1822,"r":114,"r30":111,"climb":-3,"n50":-1,"n20":-2,"n5":0,"e20":-3.44,"s50":-7.96},{"tkr":"EIDO","name":"Indonesia","y":0.0364,"m3":-0.1524,"m1":-0.1375,"cx":-0.2065,"r":115,"r30":88,"climb":-27,"n50":-1,"n20":-1,"n5":2,"e20":-2.28,"s50":-9.37}],
+  "Industry / Sector":[{"tkr":"IEZ","name":"US Oil Equipment","y":0.5246,"m3":0.4304,"m1":0.0245,"cx":2.0456,"r":2,"r30":6,"climb":4,"n50":0,"n20":0,"n5":0,"e20":5.71,"s50":9.8},{"tkr":"IYE","name":"US Energy","y":0.3602,"m3":0.3827,"m1":0.13,"cx":1.4471,"r":3,"r30":32,"climb":29,"n50":4,"n20":1,"n5":0,"e20":6.31,"s50":13.9},{"tkr":"IGE","name":"Natural Resources","y":0.3943,"m3":0.2397,"m1":0.0205,"cx":1.2641,"r":5,"r30":21,"climb":16,"n50":5,"n20":1,"n5":1,"e20":2.54,"s50":5.5},{"tkr":"IEO","name":"Oil & Gas Prod.","y":0.3835,"m3":0.4365,"m1":0.2167,"cx":1.0697,"r":7,"r30":67,"climb":60,"n50":1,"n20":0,"n5":0,"e20":8.83,"s50":19.93},{"tkr":"IYZ","name":"Telecom","y":0.4874,"m3":0.1892,"m1":0.0285,"cx":1.039,"r":9,"r30":48,"climb":39,"n50":-1,"n20":-1,"n5":0,"e20":2.28,"s50":6.82},{"tkr":"IYM","name":"Basic Materials","y":0.2785,"m3":0.1009,"m1":-0.0794,"cx":0.7965,"r":11,"r30":20,"climb":9,"n50":-2,"n20":-2,"n5":1,"e20":-0.86,"s50":-2.6},{"tkr":"VEGI","name":"Agriculture","y":0.246,"m3":0.1682,"m1":-0.0171,"cx":0.7842,"r":12,"r30":50,"climb":38,"n50":3,"n20":1,"n5":1,"e20":0.47,"s50":1.73},{"tkr":"TAN","name":"Solar","y":0.7544,"m3":0.1185,"m1":-0.0496,"cx":0.6644,"r":14,"r30":30,"climb":16,"n50":3,"n20":-1,"n5":-1,"e20":0.53,"s50":0.52},{"tkr":"SOXX","name":"Semiconductor","y":0.6503,"m3":0.0987,"m1":-0.0895,"cx":0.5561,"r":20,"r30":23,"climb":3,"n50":-2,"n20":-2,"n5":-1,"e20":-1.5,"s50":-3.0},{"tkr":"IDGT","name":"Digital Infrastructure","y":0.2947,"m3":0.143,"m1":0.0064,"cx":0.4868,"r":22,"r30":102,"climb":80,"n50":-1,"n20":-1,"n5":0,"e20":0.33,"s50":4.69},{"tkr":"ITA","name":"Aerospace","y":0.3967,"m3":0.0093,"m1":-0.0808,"cx":0.4218,"r":25,"r30":55,"climb":30,"n50":-3,"n20":-1,"n5":0,"e20":-4.05,"s50":-5.95},{"tkr":"ICLN","name":"Clean Energy","y":0.5984,"m3":0.1082,"m1":-0.0398,"cx":0.4023,"r":26,"r30":57,"climb":31,"n50":4,"n20":2,"n5":0,"e20":-0.33,"s50":-0.32},{"tkr":"IDU","name":"US Utilities","y":0.1825,"m3":0.0623,"m1":-0.0373,"cx":0.1381,"r":40,"r30":114,"climb":74,"n50":0,"n20":0,"n5":0,"e20":-1.25,"s50":0.38},{"tkr":"RSPS","name":"Eq. Wt. Staples","y":0.011,"m3":0.0147,"m1":-0.1025,"cx":0.1283,"r":43,"r30":63,"climb":20,"n50":-1,"n20":0,"n5":0,"e20":-3.51,"s50":-6.48},{"tkr":"IHE","name":"Pharmaceuticals","y":0.2569,"m3":0.0086,"m1":-0.0593,"cx":0.1281,"r":44,"r30":16,"climb":-28,"n50":0,"n20":0,"n5":1,"e20":-0.86,"s50":-2.32},{"tkr":"FFTY","name":"IBD 50 ETF","y":0.2275,"m3":-0.0375,"m1":-0.1592,"cx":0.1222,"r":46,"r30":109,"climb":63,"n50":-1,"n20":0,"n5":0,"e20":-5.53,"s50":-8.67},{"tkr":"IYJ","name":"Industrials","y":0.1264,"m3":-0.0091,"m1":-0.0679,"cx":0.1135,"r":49,"r30":58,"climb":9,"n50":-2,"n20":-2,"n5":0,"e20":-1.91,"s50":-4.3},{"tkr":"SNSR","name":"Internet of Things","y":0.0974,"m3":0.023,"m1":-0.0661,"cx":0.1085,"r":50,"r30":102,"climb":52,"n50":1,"n20":1,"n5":0,"e20":-0.41,"s50":-1.33},{"tkr":"IYT","name":"Transportation","y":0.1405,"m3":-0.0133,"m1":-0.0762,"cx":0.0699,"r":56,"r30":35,"climb":-21,"n50":-2,"n20":-3,"n5":0,"e20":-2.07,"s50":-4.93},{"tkr":"IAT","name":"Regional Banks","y":0.1483,"m3":-0.053,"m1":-0.0866,"cx":0.0312,"r":64,"r30":13,"climb":-51,"n50":-4,"n20":-3,"n5":0,"e20":-1.44,"s50":-6.52},{"tkr":"BOTZ","name":"Robotics & AI","y":0.1057,"m3":-0.0759,"m1":-0.1488,"cx":0.0073,"r":80,"r30":93,"climb":13,"n50":-2,"n20":-2,"n5":0,"e20":-4.72,"s50":-8.95},{"tkr":"REM","name":"Mortgage REIT","y":0.0105,"m3":-0.0429,"m1":-0.0553,"cx":0.0006,"r":90,"r30":44,"climb":-46,"n50":-2,"n20":-2,"n5":-1,"e20":-2.26,"s50":-5.94},{"tkr":"IBB","name":"Biotechnology","y":0.2501,"m3":-0.0358,"m1":-0.0534,"cx":0.0,"r":97,"r30":29,"climb":-68,"n50":-2,"n20":-2,"n5":0,"e20":-0.73,"s50":-3.18},{"tkr":"ITB","name":"Home Construction","y":-0.0496,"m3":-0.059,"m1":-0.1415,"cx":-0.0,"r":97,"r30":94,"climb":-3,"n50":-1,"n20":0,"n5":1,"e20":-4.47,"s50":-11.47},{"tkr":"RSPD","name":"Eq. Wt. Discr.","y":0.0609,"m3":-0.0639,"m1":-0.0761,"cx":0.0,"r":97,"r30":72,"climb":-25,"n50":2,"n20":1,"n5":1,"e20":-2.09,"s50":-5.98},{"tkr":"IAK","name":"Insurance","y":-0.0282,"m3":-0.0492,"m1":-0.0337,"cx":-0.0008,"r":103,"r30":91,"climb":-12,"n50":0,"n20":0,"n5":0,"e20":-0.74,"s50":-1.82},{"tkr":"IYH","name":"Healthcare","y":0.0236,"m3":-0.0562,"m1":-0.0652,"cx":-0.0074,"r":104,"r30":52,"climb":-52,"n50":-1,"n20":-2,"n5":0,"e20":-1.78,"s50":-4.62},{"tkr":"IAI","name":"Brokers-Dealers","y":0.1232,"m3":-0.1058,"m1":-0.0561,"cx":-0.0277,"r":106,"r30":68,"climb":-38,"n50":-3,"n20":0,"n5":0,"e20":-1.81,"s50":-5.98},{"tkr":"IYF","name":"Financial","y":0.0343,"m3":-0.0987,"m1":-0.0525,"cx":-0.0357,"r":107,"r30":69,"climb":-38,"n50":-6,"n20":-3,"n5":0,"e20":-1.22,"s50":-4.79},{"tkr":"IYG","name":"Financial Services","y":0.039,"m3":-0.1165,"m1":-0.0519,"cx":-0.0591,"r":109,"r30":74,"climb":-35,"n50":-3,"n20":-2,"n5":0,"e20":-1.24,"s50":-5.22},{"tkr":"IYW","name":"Technology","y":0.2196,"m3":-0.0957,"m1":-0.0669,"cx":-0.0687,"r":110,"r30":106,"climb":-4,"n50":-5,"n20":-2,"n5":0,"e20":-3.0,"s50":-5.24},{"tkr":"IHF","name":"Healthcare Providers","y":-0.1799,"m3":-0.1083,"m1":-0.0642,"cx":-0.1634,"r":113,"r30":115,"climb":2,"n50":-2,"n20":-1,"n5":0,"e20":-2.67,"s50":-6.51},{"tkr":"IHI","name":"Medical Devices","y":-0.085,"m3":-0.1219,"m1":-0.0782,"cx":-0.2495,"r":116,"r30":102,"climb":-14,"n50":-3,"n20":-1,"n5":0,"e20":-1.81,"s50":-5.72},{"tkr":"ESPO","name":"Video Gaming","y":-0.0347,"m3":-0.153,"m1":-0.0592,"cx":-0.387,"r":117,"r30":117,"climb":0,"n50":-2,"n20":1,"n5":0,"e20":-3.32,"s50":-7.87},{"tkr":"IGV","name":"Tech Software","y":-0.1633,"m3":-0.2539,"m1":-0.0027,"cx":-0.4754,"r":119,"r30":118,"climb":-1,"n50":-4,"n20":0,"n5":-1,"e20":-3.66,"s50":-6.9}],
+  "Style":[{"tkr":"IMCV","name":"Mid-cap Value","y":0.1644,"m3":0.0275,"m1":-0.0402,"cx":0.1775,"r":37,"r30":40,"climb":3,"n50":1,"n20":0,"n5":0,"e20":-0.29,"s50":-1.54},{"tkr":"SPLV","name":"Defensive Equity","y":0.0145,"m3":0.02,"m1":-0.0453,"cx":0.1189,"r":48,"r30":92,"climb":44,"n50":0,"n20":0,"n5":0,"e20":-1.81,"s50":-2.35},{"tkr":"IWC","name":"Micro Cap","y":0.3991,"m3":0.005,"m1":-0.0456,"cx":0.0841,"r":52,"r30":42,"climb":-10,"n50":0,"n20":-1,"n5":0,"e20":-0.37,"s50":-2.7},{"tkr":"IMCB","name":"Mid-cap Blend","y":0.1212,"m3":0.0023,"m1":-0.0489,"cx":0.081,"r":53,"r30":71,"climb":18,"n50":-3,"n20":-3,"n5":-1,"e20":-1.06,"s50":-2.52},{"tkr":"ISCV","name":"Small-cap Value","y":0.1722,"m3":0.0074,"m1":-0.0468,"cx":0.0738,"r":55,"r30":36,"climb":-19,"n50":-1,"n20":-1,"n5":-1,"e20":-0.22,"s50":-2.75},{"tkr":"ISCB","name":"Small-cap Blend","y":0.1821,"m3":-0.0077,"m1":-0.052,"cx":0.0467,"r":61,"r30":53,"climb":-8,"n50":-3,"n20":-2,"n5":-1,"e20":-0.64,"s50":-3.19},{"tkr":"EUSA","name":"Equally Weighted","y":0.0911,"m3":-0.0184,"m1":-0.0481,"cx":0.0244,"r":65,"r30":70,"climb":5,"n50":-2,"n20":-1,"n5":0,"e20":-1.42,"s50":-3.23},{"tkr":"ISCG","name":"Small-cap Growth","y":0.1888,"m3":-0.0266,"m1":-0.0618,"cx":0.0243,"r":67,"r30":62,"climb":-5,"n50":-3,"n20":-3,"n5":-1,"e20":-1.38,"s50":-3.96},{"tkr":"ILCV","name":"Large-cap Value","y":0.1571,"m3":-0.0163,"m1":-0.0448,"cx":0.0202,"r":70,"r30":43,"climb":-27,"n50":-1,"n20":0,"n5":0,"e20":-1.18,"s50":-2.8},{"tkr":"IMCG","name":"Mid-cap Growth","y":0.0772,"m3":-0.0234,"m1":-0.0566,"cx":0.0108,"r":76,"r30":100,"climb":24,"n50":-1,"n20":-1,"n5":-1,"e20":-1.82,"s50":-3.48},{"tkr":"QQQJ","name":"NASDAQ Next Gen","y":0.2157,"m3":-0.0295,"m1":-0.0507,"cx":0.0107,"r":77,"r30":56,"climb":-21,"n50":-1,"n20":0,"n5":0,"e20":-1.57,"s50":-3.9},{"tkr":"MTUM","name":"Momentum","y":0.1522,"m3":-0.0507,"m1":-0.0583,"cx":0.0001,"r":94,"r30":99,"climb":5,"n50":-4,"n20":-2,"n5":-1,"e20":-2.19,"s50":-4.0},{"tkr":"ILCB","name":"Large-cap Blend","y":0.1442,"m3":-0.0515,"m1":-0.056,"cx":-0.0003,"r":102,"r30":83,"climb":-19,"n50":-1,"n20":0,"n5":0,"e20":-1.97,"s50":-4.0},{"tkr":"QQQ","name":"Nasdaq 100","y":0.1811,"m3":-0.0665,"m1":-0.0583,"cx":-0.0122,"r":105,"r30":96,"climb":-9,"n50":-5,"n20":-2,"n5":-1,"e20":-2.52,"s50":-4.44},{"tkr":"ILCG","name":"Large-cap Growth","y":0.1245,"m3":-0.0894,"m1":-0.0705,"cx":-0.0446,"r":108,"r30":107,"climb":-1,"n50":0,"n20":1,"n5":0,"e20":-2.99,"s50":-5.49},{"tkr":"ARKK","name":"ARK Innovation","y":0.2691,"m3":-0.1466,"m1":-0.0657,"cx":-0.1329,"r":112,"r30":116,"climb":4,"n50":-3,"n20":1,"n5":1,"e20":-3.61,"s50":-6.69}],
+  "Fixed Income":[{"tkr":"SHV","name":"Short Treasury (0.4)","y":0.04,"m3":0.0085,"m1":0.0025,"cx":0.0365,"r":63,"r30":86,"climb":23,"n50":0,"n20":0,"n5":0,"e20":0.11,"s50":0.3},{"tkr":"MBB","name":"MBS (2.5)","y":0.0554,"m3":-0.0015,"m1":-0.0194,"cx":0.0244,"r":65,"r30":89,"climb":24,"n50":0,"n20":0,"n5":0,"e20":-0.76,"s50":-1.05},{"tkr":"SLQD","name":"0-5Y IG Corp (2.2)","y":0.046,"m3":0.0015,"m1":-0.0083,"cx":0.0215,"r":69,"r30":85,"climb":16,"n50":0,"n20":0,"n5":0,"e20":-0.31,"s50":-0.46},{"tkr":"HYGH","name":"HY Hedged (0)","y":0.0621,"m3":0.0037,"m1":-0.0048,"cx":0.0202,"r":70,"r30":73,"climb":3,"n50":0,"n20":0,"n5":0,"e20":0.0,"s50":-0.32},{"tkr":"SHY","name":"1-3Y Treasury (2)","y":0.0359,"m3":0.0013,"m1":-0.006,"cx":0.018,"r":72,"r30":90,"climb":18,"n50":0,"n20":0,"n5":0,"e20":-0.26,"s50":-0.32},{"tkr":"EMHY","name":"EM HY Bonds (5)","y":0.0938,"m3":-0.0106,"m1":-0.0309,"cx":0.013,"r":74,"r30":64,"climb":-10,"n50":0,"n20":0,"n5":0,"e20":-0.87,"s50":-1.82},{"tkr":"TIP","name":"TIPS (7.5)","y":0.0357,"m3":0.0022,"m1":-0.012,"cx":0.0115,"r":75,"r30":105,"climb":30,"n50":0,"n20":0,"n5":0,"e20":-0.61,"s50":-0.67},{"tkr":"SHYG","name":"0-5Y HY Corp (2.3)","y":0.0546,"m3":-0.0045,"m1":-0.0119,"cx":0.0075,"r":79,"r30":82,"climb":3,"n50":0,"n20":0,"n5":0,"e20":-0.39,"s50":-0.86},{"tkr":"HYG","name":"US HY Corp (4)","y":0.0569,"m3":-0.0065,"m1":-0.0166,"cx":0.0068,"r":81,"r30":81,"climb":0,"n50":0,"n20":0,"n5":0,"e20":-0.56,"s50":-1.15},{"tkr":"IEI","name":"3-7Y Treasury (4.5)","y":0.0406,"m3":-0.0036,"m1":-0.0153,"cx":0.0047,"r":82,"r30":94,"climb":12,"n50":0,"n20":0,"n5":0,"e20":-0.66,"s50":-0.85},{"tkr":"LQDH","name":"IG Corp Hedged (0.3)","y":0.0562,"m3":-0.0024,"m1":-0.0053,"cx":0.0025,"r":85,"r30":80,"climb":-5,"n50":0,"n20":0,"n5":0,"e20":0.08,"s50":-0.46},{"tkr":"EMB","name":"EM Govt (7)","y":0.0868,"m3":-0.0153,"m1":-0.0343,"cx":0.0021,"r":86,"r30":79,"climb":-7,"n50":0,"n20":0,"n5":0,"e20":-1.01,"s50":-1.96},{"tkr":"GHYG","name":"US & Intl HY Corp","y":0.064,"m3":-0.0152,"m1":-0.0226,"cx":0.0013,"r":88,"r30":78,"climb":-10,"n50":0,"n20":0,"n5":0,"e20":-0.62,"s50":-1.56},{"tkr":"IEF","name":"7-10Y Treasury (7.5)","y":0.0417,"m3":-0.0063,"m1":-0.0222,"cx":0.0013,"r":88,"r30":102,"climb":14,"n50":0,"n20":0,"n5":0,"e20":-0.9,"s50":-1.15},{"tkr":"TLH","name":"10-20Y Treasury (11)","y":0.0175,"m3":-0.0084,"m1":-0.0356,"cx":0.0006,"r":90,"r30":109,"climb":19,"n50":-1,"n20":-1,"n5":-1,"e20":-1.23,"s50":-1.85},{"tkr":"TLT","name":"20Y+ Treasury (17.5)","y":0.0048,"m3":-0.0065,"m1":-0.0368,"cx":0.0001,"r":94,"r30":113,"climb":19,"n50":-1,"n20":-1,"n5":-1,"e20":-1.17,"s50":-1.71}],
+  "Commodity / REIT":[{"tkr":"SLV","name":"Silver","y":1.0355,"m3":-0.04,"m1":-0.2223,"cx":1.0438,"r":8,"r30":1,"climb":-7,"n50":-1,"n20":0,"n5":0,"e20":-10.99,"s50":-19.45},{"tkr":"GSG","name":"Commodities","y":0.3854,"m3":0.3314,"m1":0.214,"cx":1.0302,"r":10,"r30":60,"climb":50,"n50":2,"n20":2,"n5":0,"e20":4.77,"s50":15.78},{"tkr":"GLD","name":"Gold","y":0.4659,"m3":-0.0132,"m1":-0.1378,"cx":0.5378,"r":21,"r30":14,"climb":-7,"n50":-4,"n20":-3,"n5":-1,"e20":-7.38,"s50":-10.35},{"tkr":"GDX","name":"Gold Miners","y":0.9051,"m3":-0.0567,"m1":-0.234,"cx":0.4702,"r":23,"r30":5,"climb":-18,"n50":-5,"n20":-3,"n5":2,"e20":-8.27,"s50":-15.12},{"tkr":"CPER","name":"Copper","y":0.0311,"m3":-0.0133,"m1":-0.0839,"cx":0.1317,"r":41,"r30":17,"climb":-24,"n50":-1,"n20":-2,"n5":0,"e20":-2.69,"s50":-5.78},{"tkr":"VNQ","name":"US Real Estate","y":0.0107,"m3":-0.0006,"m1":-0.071,"cx":0.0759,"r":54,"r30":97,"climb":43,"n50":-1,"n20":-1,"n5":-1,"e20":-3.47,"s50":-4.56},{"tkr":"WOOD","name":"Timber","y":-0.0665,"m3":-0.0216,"m1":-0.1117,"cx":0.0619,"r":57,"r30":49,"climb":-8,"n50":-1,"n20":-2,"n5":0,"e20":-2.72,"s50":-7.71},{"tkr":"GBTC","name":"Bitcoin Trust","y":-0.2292,"m3":-0.2155,"m1":-0.0037,"cx":-0.4384,"r":118,"r30":119,"climb":1,"n50":-2,"n20":0,"n5":0,"e20":-2.3,"s50":-7.47},{"tkr":"ETHE","name":"Ethereum Trust","y":-0.0229,"m3":-0.3058,"m1":-0.0061,"cx":-0.509,"r":120,"r30":120,"climb":0,"n50":0,"n20":2,"n5":0,"e20":-3.2,"s50":-10.14}]
+};
+const SORT_STATE={};
+const TOTAL=120;
+
+// Chart
+(function(){
+  const ctx=document.getElementById('trendChart').getContext('2d');
+  const reg='Bonds';
+  new Chart(ctx,{type:'bar',data:{labels:TREND_HISTORY.map(d=>d.d),datasets:[{data:TREND_HISTORY.map(d=>d.s),backgroundColor:TREND_HISTORY.map(d=>d.s>=0.7?'rgba(29,233,182,.75)':'rgba(68,138,255,.75)'),borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1c2232',borderColor:'#2a3350',borderWidth:1,titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:11},callbacks:{label:c=>` Score: ${(c.raw*100).toFixed(0)}%`}}},scales:{x:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#5a6580',font:{family:'IBM Plex Mono',size:8},maxRotation:45}},y:{min:0,max:1,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6580',font:{family:'IBM Plex Mono',size:9},stepSize:.2,callback:v=>v*100+'%'}}}}});
+})();
+
+// Matrix
+document.getElementById('matrixList').innerHTML=MATRIX.map(m=>{
+  const cls=m.f>0?'sig-b':m.f<0?'sig-r':'sig-n';
+  const lbl=m.f>0?'Bullish':m.f<0?'Bearish':'Neutral';
+  const bc=m.f>0?'var(--bull)':m.f<0?'var(--bear)':'var(--neut)';
+  return`<div class="mx-row"><div class="mx-name">${m.n}</div><div class="mx-bar"><div class="mx-fill" style="width:${m.pct}%;background:${bc}"></div></div><div class="sig ${cls}">${lbl}</div></div>`;
+}).join('');
+
+// Springs
+document.getElementById('springsGrid').innerHTML=SPRINGS.map((s,i)=>{
+  const yc=s.y>.005?'sv-up':s.y<-.005?'sv-dn':'sv-wh';
+  const m1c=s.m1>.005?'sv-up':s.m1<-.005?'sv-dn':'sv-wh';
+  const n50c=s.n50>0?'sv-up':s.n50<0?'sv-dn':'sv-wh';
+  const n20c=s.n20>0?'sv-up':s.n20<0?'sv-dn':'sv-wh';
+  const n5c=s.n5>0?'sv-up':s.n5<0?'sv-dn':'sv-wh';
+  const tp=Math.round(((TOTAL-s.r)/(TOTAL-1))*100);
+  const ap=Math.round(((TOTAL-s.r30)/(TOTAL-1))*100);
+  return`<div class="spr-card">
+    <div class="spr-accent" style="background:linear-gradient(90deg,${s.col}88,${s.col}22)"></div>
+    <div class="spr-cat">${s.cat}</div>
+    <div class="spr-tkr">${s.tkr}</div>
+    <div class="spr-name">${s.name}</div>
+    <div class="spr-row"><span class="spr-lbl">Annual</span><span class="spr-val ${yc}">${(s.y*100).toFixed(1)}%</span></div>
+    <div class="spr-row"><span class="spr-lbl">Last Month</span><span class="spr-val ${m1c}">${(s.m1*100).toFixed(1)}%</span></div>
+    <div class="spr-row"><span class="spr-lbl">Exp. Score</span><span class="spr-val sv-up">${s.cx.toFixed(3)}</span></div>
+    <div class="spr-row"><span class="spr-lbl">30D Variation</span><span class="climb-val">↑ +${s.climb}</span></div>
+    <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--mist);margin-top:6px">
+      <span>#${s.r} today</span><span>#${s.r30} 30d ago</span>
+    </div>
+    <div class="rank-bar"><div class="rb-ago" style="width:${ap}%"></div><div class="rb-now" style="width:${tp}%"></div></div>
+    <div class="acc-row">
+      <div class="acc-item"><div class="acc-lbl">Net 50D</div><div class="acc-val ${n50c}">${s.n50>0?'+':''}${s.n50}</div></div>
+      <div class="acc-item"><div class="acc-lbl">Net 20D</div><div class="acc-val ${n20c}">${s.n20>0?'+':''}${s.n20}</div></div>
+      <div class="acc-item"><div class="acc-lbl">Net 5D</div><div class="acc-val ${n5c}">${s.n5>0?'+':''}${s.n5}</div></div>
+    </div>
+  </div>`;
+}).join('');
+
+// Category tabs
+function buildRows(cat,col,dir){
+  let d=[...CAT_DATA[cat]];
+  const keys=[null,'r','y','m3','m1','cx','climb','e20','s50','n50','n20','n5'];
+  const k=keys[col];
+  if(k) d.sort((a,b)=>dir==='asc'?a[k]-b[k]:b[k]-a[k]);
+  return d.map(e=>{
+    const yc=e.y>.005?'pos':e.y<-.005?'neg':'';
+    const m3c=e.m3>.005?'pos':e.m3<-.005?'neg':'';
+    const m1c=e.m1>.005?'pos':e.m1<-.005?'neg':'';
+    const cxc=e.cx>0.5?'pos':e.cx>0?'':e.cx<0?'neg':'';
+    const cxP=Math.min(100,Math.max(0,(e.cx/4)*100));
+    const cxF=e.cx>0?'var(--bull)':'var(--bear)';
+    const ca=Math.abs(e.climb);
+    const cc=e.climb>=5?'rb-up':e.climb<=-5?'rb-dn':'rb-flat';
+    const ct=e.climb>=5?`↑${e.climb}`:e.climb<=-5?`↓${ca}`:`${e.climb>0?'+':''}${e.climb}`;
+    const n50c=e.n50>0?'var(--bull)':e.n50<0?'var(--bear)':'var(--smoke)';
+    const n20c=e.n20>0?'var(--bull)':e.n20<0?'var(--bear)':'var(--smoke)';
+    const n5c=e.n5>0?'var(--bull)':e.n5<0?'var(--bear)':'var(--smoke)';
+    const e20c=e.e20>0?'var(--bull)':e.e20<0?'var(--bear)':'var(--smoke)';
+    const s50c=e.s50>0?'var(--bull)':e.s50<0?'var(--bear)':'var(--smoke)';
+    return`<tr>
+      <td><div class="etf-tkr">${e.tkr}</div><div class="etf-name">${e.name}</div></td>
+      <td class="r" style="font-family:'IBM Plex Mono',monospace;font-size:11px"><strong style="color:#e8eeff">#${e.r}</strong></td>
+      <td class="r ${yc}">${(e.y*100).toFixed(1)}%</td>
+      <td class="r ${m3c}">${(e.m3*100).toFixed(1)}%</td>
+      <td class="r ${m1c}">${(e.m1*100).toFixed(1)}%</td>
+      <td class="r"><div class="cx-cell"><span class="${cxc}">${e.cx.toFixed(3)}</span><div class="cx-bar"><div class="cx-fill" style="width:${cxP}%;background:${cxF}"></div></div></div></td>
+      <td class="r"><span class="rb ${cc}">${ct}</span></td>
+      <td class="r" style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:${e20c}">${e.e20>0?'+':''}${e.e20}%</td>
+      <td class="r" style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:${s50c}">${e.s50>0?'+':''}${e.s50}%</td>
+      <td class="r" style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:${n50c}">${e.n50>0?'+':''}${e.n50}</td>
+      <td class="r" style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:${n20c}">${e.n20>0?'+':''}${e.n20}</td>
+      <td class="r" style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:${n5c}">${e.n5>0?'+':''}${e.n5}</td>
+    </tr>`;
+  }).join('');
+}
+function sortTable(pid,cat,col){
+  const st=SORT_STATE[pid]||{col:1,dir:'asc'};
+  const dir=st.col===col?(st.dir==='desc'?'asc':'desc'):'desc';
+  SORT_STATE[pid]={col,dir};
+  document.querySelector(`#${pid} tbody`).innerHTML=buildRows(cat,col,dir);
+  document.querySelectorAll(`#${pid} th`).forEach((th,i)=>{
+    th.innerHTML=th.innerHTML.replace(/ [▲▼]$/,'');
+    if(i===col) th.innerHTML+=dir==='desc'?' ▼':' ▲';
+  });
+}
+(function(){
+  const cats=Object.keys(CAT_DATA);
+  const hdrs=['ETF','Exp. Rank','Annual','3M','1M','Exp. Score','30D Variation','vs EMA20','vs SMA50','Net 50D','Net 20D','Net 5D'];
+  document.getElementById('catTabs').innerHTML=cats.map((c,i)=>`<button class="cat-tab ${i===0?'on':''}" onclick="swTab(this,'cp${i}')">${c}</button>`).join('');
+  document.getElementById('catPanels').innerHTML=cats.map((cat,i)=>{
+    const pid=`cp${i}`;
+    SORT_STATE[pid]={col:1,dir:'asc'};
+    const ths=hdrs.map((h,ci)=>{
+      const cls=ci===0?'':' class="r"';
+      const s=ci>0?`onclick="sortTable('${pid}','${cat}',${ci})"` :'';
+      return`<th${cls} ${s}>${h}${ci===1?' ▲':''}</th>`;
+    }).join('');
+    return`<div id="${pid}" class="cat-panel ${i===0?'on':''}"><table class="etf"><thead><tr>${ths}</tr></thead><tbody>${buildRows(cat,1,'asc')}</tbody></table></div>`;
+  }).join('');
+})();
+function swTab(el,pid){
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.cat-panel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on'); document.getElementById(pid).classList.add('on');
+}
+</script>
+</body>
+</html>
