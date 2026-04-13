@@ -364,10 +364,10 @@ function sortTable(pid,cat,col){
   const cats=Object.keys(CAT_DATA);
   const grpHdr=`<tr class="tbl-group-row">
     <th colspan="2" style="background:var(--bg3)"></th>
-    <th colspan="3" style="background:var(--bg3);text-align:center;color:var(--teal);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid rgba(0,229,204,.15)">Exp. Regression</th>
-    <th colspan="4" style="background:var(--bg3);text-align:center;color:var(--amber);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(245,158,11,.15)">Accumulation / Distribution</th>
-    <th colspan="4" style="background:var(--bg3);text-align:center;color:var(--smoke);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(136,153,170,.15)">Volatility & Moving Averages</th>
-    <th colspan="5" style="background:var(--bg3);text-align:center;color:var(--white);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(232,240,254,.15)">Performance</th>
+    <th colspan="3" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid rgba(0,229,204,.12)">Exp. Regression</th>
+    <th colspan="4" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Accumulation / Distribution</th>
+    <th colspan="4" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Volatility & Moving Averages</th>
+    <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Performance</th>
   </tr>`;
   const hdrs=['ETF','Rank','Exp. Score','30D Var','Exp. Grade','Net 50D','Net 20D','Net 5D','Net Close','ATR 5%','ATR Ratio','EMA20%','SMA50%','Perf 1D','Perf 1M','Perf 3M','Annual','Operable'];
   document.getElementById('catTabs').innerHTML=cats.map((c,i)=>`<button class="cat-tab ${i===0?'on':''}" onclick="swTab(this,'cp${i}')">${c}</button>`).join('');
