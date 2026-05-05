@@ -120,6 +120,25 @@ table.etf td.r{text-align:right}
 .rb-flat{background:var(--rule);color:var(--mist)}
 .data-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:1px solid var(--rule);border-radius:5px;font-size:11px;font-weight:600;color:var(--smoke);letter-spacing:.5px;margin-bottom:20px}
 .foot-note{font-size:11px;color:var(--mist);letter-spacing:.3px}
+/* ── Grade pills ── */
+.gp{display:inline-block;min-width:28px;text-align:center;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace}
+.gp-aplus{background:#f59e0b;color:#0d1117}
+.gp-a    {background:#10b981;color:#0d1117}
+.gp-b    {background:#3b82f6;color:#0d1117}
+.gp-c    {background:#475569;color:#e8eeff}
+.gp-d    {background:#dc2626;color:#fff}
+.gp-e    {background:#7f1d1d;color:#fff}
+/* Coloured letter (used in filter checkboxes — text-only, no fill) */
+.gpt-aplus{color:#f59e0b}
+.gpt-a    {color:#10b981}
+.gpt-b    {color:#3b82f6}
+.gpt-c    {color:#94a3b8}
+.gpt-d    {color:#ef4444}
+.gpt-e    {color:#991b1b}
+/* Operable pill */
+.op{display:inline-block;min-width:38px;text-align:center;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace}
+.op-yes{background:#10b981;color:#0d1117}
+.op-no {background:#dc2626;color:#fff}
 /* ── Filter bar ── */
 .filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-family:'IBM Plex Mono',monospace}
 .filter-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mist);padding-right:6px}
@@ -267,23 +286,23 @@ table.etf td.r{text-align:right}
       <div class="filter-multi" id="fltEgWrap" data-key="eg">
         <button class="filter-multi-btn" type="button">Exp Grade</button>
         <div class="filter-multi-panel">
-          <label class="filter-multi-opt"><input type="checkbox" value="A+"><span>A+</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="A"><span>A</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="B"><span>B</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="C"><span>C</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="D"><span>D</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="E"><span>E</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="A+"><span class="gpt-aplus">A+</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="A"><span class="gpt-a">A</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="B"><span class="gpt-b">B</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="C"><span class="gpt-c">C</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="D"><span class="gpt-d">D</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="E"><span class="gpt-e">E</span></label>
         </div>
       </div>
       <div class="filter-multi" id="fltAgWrap" data-key="ag">
         <button class="filter-multi-btn" type="button">Acc Grade</button>
         <div class="filter-multi-panel">
-          <label class="filter-multi-opt"><input type="checkbox" value="A+"><span>A+</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="A"><span>A</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="B"><span>B</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="C"><span>C</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="D"><span>D</span></label>
-          <label class="filter-multi-opt"><input type="checkbox" value="E"><span>E</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="A+"><span class="gpt-aplus">A+</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="A"><span class="gpt-a">A</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="B"><span class="gpt-b">B</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="C"><span class="gpt-c">C</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="D"><span class="gpt-d">D</span></label>
+          <label class="filter-multi-opt"><input type="checkbox" value="E"><span class="gpt-e">E</span></label>
         </div>
       </div>
       <span class="filter-count" id="fltCount"></span>
@@ -500,24 +519,19 @@ function buildRows(cat,col,dir){
     const e20c=e.e20>0?'var(--teal)':e.e20<0?'var(--red)':'var(--smoke)';
     const s50c=e.s50>0?'var(--teal)':e.s50<0?'var(--red)':'var(--smoke)';
     const atrrc=e.atrr<0.8?'var(--teal)':e.atrr>1.2?'var(--red)':'var(--smoke)';
-    const opLbl=e.op?'YES':'NO';
-    const opClr=e.op?'var(--teal)':'var(--mist)';
-    const opBg=e.op?'rgba(0,229,204,.08)':'transparent';
     const mono="font-family:'IBM Plex Mono',monospace;font-weight:500";
-    const grdPal={'A+':'var(--teal)',A:'var(--teal)',B:'rgba(0,229,204,.65)',C:'var(--amber)',D:'var(--red)',E:'var(--red)'};
-    const egClr=grdPal[e.eg]||'var(--smoke)';
-    const agClr=grdPal[e.ag]||'var(--smoke)';
+    const gradeClass=g=>'gp gp-'+(g==='A+'?'aplus':String(g||'').toLowerCase());
     return`<tr>
       <td><div class="etf-tkr">${e.tkr}</div><div class="etf-name">${e.name}</div></td>
       <td class="r" style="${mono};font-size:11px"><strong style="color:#e8eeff">#${e.r}</strong></td>
       <td class="r"><div class="cx-cell"><span class="${cxc}">${e.cx.toFixed(3)}</span><div class="cx-bar"><div class="cx-fill" style="width:${cxP}%;background:${cxF}"></div></div></div></td>
       <td class="r"><span class="rb ${cc}">${ct}</span></td>
-      <td class="r" style="${mono};color:${egClr};font-weight:700">${e.eg}</td>
+      <td class="r"><span class="${gradeClass(e.eg)}">${e.eg}</span></td>
       <td class="r" style="${mono};color:${n50c};border-left:1px solid var(--rule2)">${e.n50>0?'+':''}${e.n50}</td>
       <td class="r" style="${mono};color:${n20c}">${e.n20>0?'+':''}${e.n20}</td>
       <td class="r" style="${mono};color:${n5c}">${e.n5>0?'+':''}${e.n5}</td>
       <td class="r" style="${mono};color:${ncc}">${e.nc>0?'+':''}${e.nc}</td>
-      <td class="r" style="${mono};color:${agClr};font-weight:700">${e.ag}</td>
+      <td class="r"><span class="${gradeClass(e.ag)}">${e.ag}</span></td>
       <td class="r" style="${mono};border-left:1px solid var(--rule2)">${e.atr5}%</td>
       <td class="r" style="${mono};color:${atrrc}">${e.atrr.toFixed(2)}</td>
       <td class="r" style="${mono};color:${e20c}">${e.e20>0?'+':''}${e.e20}%</td>
@@ -526,7 +540,7 @@ function buildRows(cat,col,dir){
       <td class="r ${m1c}">${(e.m1*100).toFixed(1)}%</td>
       <td class="r ${m3c}">${(e.m3*100).toFixed(1)}%</td>
       <td class="r ${yc}">${(e.y*100).toFixed(1)}%</td>
-      <td class="r" style="${mono};color:${opClr};background:${opBg};font-weight:700;font-size:11px">${opLbl}</td>
+      <td class="r"><span class="op ${e.op?'op-yes':'op-no'}">${e.op?'YES':'NO'}</span></td>
     </tr>`;
   }).join('');
 }
