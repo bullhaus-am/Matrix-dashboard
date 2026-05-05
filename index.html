@@ -51,14 +51,14 @@ body{background:var(--bg);color:var(--smoke);font-family:var(--font);font-size:1
 .mini-tkr{font-weight:700;font-size:12px;color:var(--white);min-width:40px;letter-spacing:1px}
 .mini-name{flex:1;font-size:10px;color:var(--mist)}
 .mini-perf{font-size:11px;color:var(--teal)}
-.content-row{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:stretch}
+.content-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
 .chart-card,.mx-card{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;min-height:0}
 .mx-list{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--rule2) transparent}
 .chart-title{font-size:10px;letter-spacing:2px;color:var(--mist);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
 .chart-legend{display:flex;gap:16px}
 .leg-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mist);letter-spacing:.5px}
 .leg-dot{width:10px;height:3px;border-radius:2px}
-.chart-wrap{height:200px;position:relative}
+.chart-wrap{flex:1;min-height:200px;position:relative}
 .stat-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-top:16px}
 .sbi{background:var(--bg3);padding:10px 12px;text-align:center}
 .sbi-val{font-size:15px;font-weight:700;color:var(--white);display:block;letter-spacing:1px}
@@ -120,25 +120,25 @@ table.etf td.r{text-align:right}
 .rb-flat{background:var(--rule);color:var(--mist)}
 .data-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:1px solid var(--rule);border-radius:5px;font-size:11px;font-weight:600;color:var(--smoke);letter-spacing:.5px;margin-bottom:20px}
 .foot-note{font-size:11px;color:var(--mist);letter-spacing:.3px}
-/* ── Grade pills ── */
-.gp{display:inline-block;min-width:28px;text-align:center;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace}
-.gp-aplus{background:#f59e0b;color:#0d1117}
-.gp-a    {background:#10b981;color:#0d1117}
-.gp-b    {background:#3b82f6;color:#0d1117}
-.gp-c    {background:#475569;color:#e8eeff}
-.gp-d    {background:#dc2626;color:#fff}
-.gp-e    {background:#7f1d1d;color:#fff}
+/* ── Grade pills (outlined: subtle fill + coloured border + coloured letter) ── */
+.gp{display:inline-block;min-width:28px;text-align:center;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace;border:1.5px solid transparent}
+.gp-aplus{background:rgba(245,158,11,.14);color:#f59e0b;border-color:rgba(245,158,11,.55)}
+.gp-a    {background:rgba(16,185,129,.14);color:#10b981;border-color:rgba(16,185,129,.55)}
+.gp-b    {background:rgba(59,130,246,.14);color:#60a5fa;border-color:rgba(59,130,246,.55)}
+.gp-c    {background:rgba(148,163,184,.10);color:#94a3b8;border-color:rgba(148,163,184,.40)}
+.gp-d    {background:rgba(239,68,68,.14);color:#f87171;border-color:rgba(239,68,68,.55)}
+.gp-e    {background:rgba(127,29,29,.20);color:#dc2626;border-color:rgba(220,38,38,.55)}
 /* Coloured letter (used in filter checkboxes — text-only, no fill) */
-.gpt-aplus{color:#f59e0b}
-.gpt-a    {color:#10b981}
-.gpt-b    {color:#3b82f6}
-.gpt-c    {color:#94a3b8}
-.gpt-d    {color:#ef4444}
-.gpt-e    {color:#991b1b}
-/* Operable pill */
-.op{display:inline-block;min-width:38px;text-align:center;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace}
-.op-yes{background:#10b981;color:#0d1117}
-.op-no {background:#dc2626;color:#fff}
+.gpt-aplus{color:#f59e0b;font-weight:700}
+.gpt-a    {color:#10b981;font-weight:700}
+.gpt-b    {color:#60a5fa;font-weight:700}
+.gpt-c    {color:#94a3b8;font-weight:700}
+.gpt-d    {color:#f87171;font-weight:700}
+.gpt-e    {color:#dc2626;font-weight:700}
+/* Operable pill (same outlined style) */
+.op{display:inline-block;min-width:38px;text-align:center;padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace;border:1.5px solid transparent}
+.op-yes{background:rgba(16,185,129,.14);color:#10b981;border-color:rgba(16,185,129,.55)}
+.op-no {background:rgba(239,68,68,.14);color:#f87171;border-color:rgba(239,68,68,.50)}
 /* ── Filter bar ── */
 .filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-family:'IBM Plex Mono',monospace}
 .filter-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mist);padding-right:6px}
