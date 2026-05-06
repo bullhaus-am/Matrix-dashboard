@@ -52,13 +52,13 @@ body{background:var(--bg);color:var(--smoke);font-family:var(--font);font-size:1
 .mini-name{flex:1;font-size:10px;color:var(--mist)}
 .mini-perf{font-size:11px;color:var(--teal)}
 .content-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
-.chart-card,.mx-card{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;min-height:0}
-.mx-list{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--rule2) transparent}
+.chart-card,.mx-card{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;min-height:0;max-height:320px}
+.mx-list{flex:1;min-height:0;max-height:230px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--rule2) transparent}
 .chart-title{font-size:10px;letter-spacing:2px;color:var(--mist);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
 .chart-legend{display:flex;gap:16px}
 .leg-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mist);letter-spacing:.5px}
 .leg-dot{width:10px;height:3px;border-radius:2px}
-.chart-wrap{flex:1;min-height:200px;position:relative}
+.chart-wrap{flex:1;min-height:100px;position:relative}
 .stat-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-top:16px}
 .sbi{background:var(--bg3);padding:10px 12px;text-align:center}
 .sbi-val{font-size:15px;font-weight:700;color:var(--white);display:block;letter-spacing:1px}
