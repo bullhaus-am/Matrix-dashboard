@@ -24,7 +24,7 @@ body{background:var(--bg);color:var(--smoke);font-family:var(--font);font-size:1
 .regime-pill{padding:6px 16px;border-radius:4px;font-size:10px;letter-spacing:2px;font-weight:700;text-transform:uppercase}
 .pill-bonds{background:rgba(255,77,109,.12);color:var(--red);border:1px solid rgba(255,77,109,.3)}
 .pill-stocks{background:var(--teal2);color:var(--teal);border:1px solid rgba(0,229,204,.3)}
-.wrap{max-width:1680px;margin:0 auto;padding:28px 32px 60px}
+.wrap{max-width:1780px;margin:0 auto;padding:28px 32px 60px}
 .sec-head{display:flex;align-items:center;gap:12px;margin:36px 0 18px}.sec-head:first-child{margin-top:0}
 .sec-label{font-size:10px;letter-spacing:2.5px;color:var(--mist);text-transform:uppercase;white-space:nowrap}
 .sec-line{flex:1;height:1px;background:var(--rule)}
@@ -100,12 +100,12 @@ body{background:var(--bg);color:var(--smoke);font-family:var(--font);font-size:1
 .cat-panel.on::-webkit-scrollbar-track{background:transparent}
 .cat-panel.on::-webkit-scrollbar-thumb{background:var(--rule2);border-radius:4px}
 table.etf{width:100%;border-collapse:collapse}
-table.etf th{padding:8px 6px;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mist);text-align:left;background:var(--bg3);border-bottom:1px solid var(--rule);white-space:nowrap}
-table.etf thead tr.tbl-group-row th{padding:7px 6px;font-size:9px;border-bottom:none}
+table.etf th{padding:8px 4px;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mist);text-align:left;background:var(--bg3);border-bottom:1px solid var(--rule);white-space:nowrap}
+table.etf thead tr.tbl-group-row th{padding:7px 4px;font-size:9px;border-bottom:none}
 table.etf th.r{text-align:right}
 table.etf th[onclick]{cursor:pointer;user-select:none}
 table.etf th[onclick]:hover{color:var(--smoke);background:var(--rule)}
-table.etf td{padding:8px 6px;border-bottom:1px solid rgba(30,45,69,.5);font-size:11.5px;color:var(--smoke);white-space:nowrap}
+table.etf td{padding:8px 4px;border-bottom:1px solid rgba(30,45,69,.5);font-size:11.5px;color:var(--smoke);white-space:nowrap}
 table.etf tr:last-child td{border-bottom:none}
 table.etf tr:hover td{background:rgba(0,229,204,.03)}
 table.etf td.r{text-align:right}
@@ -306,7 +306,7 @@ table.etf td.r{text-align:right}
   </div>
 
   <div class="sec-head" style="margin-top:28px">
-    <div class="sec-label">Coiled Springs — 30D Variation in Ranking</div>
+    <div class="sec-label">Delta Momentum — 30D Variation in Ranking</div>
     <div class="sec-line"></div>
   </div>
   <p style="font-size:12px;color:var(--mist);margin-bottom:14px;max-width:700px">ETFs gaining the most ranking positions over the last 30 trading days. Ranking = annualised log-linear slope × R² over 91 days.</p>
@@ -366,7 +366,7 @@ table.etf td.r{text-align:right}
     <div id="compBody" class="comp-body"></div>
   </div>
 </div>
-<footer style="max-width:1680px;margin:0 auto;padding:0 32px">
+<footer style="max-width:1780px;margin:0 auto;padding:0 32px">
   <div class="foot">
     <div class="foot-note">Data: Yahoo Finance · Acc/Dist ±1.5% · Vol ×1.1 · SMA50 · Matrix band ±1%</div>
     <div class="foot-note">Exp. Regression: log-linear slope × R² · 91-day window · 130 ETFs · Jun 04, 2026</div>
@@ -596,7 +596,7 @@ function setDensity(mode){
 (function(){
   let mode=null;
   try{ mode=localStorage.getItem('dashDensity'); }catch(e){}
-  if(mode!=='14' && mode!=='27') mode=(window.innerWidth && window.innerWidth<1620)?'14':'27';
+  if(mode!=='14' && mode!=='27') mode=(window.innerWidth && window.innerWidth<1480)?'14':'27';
   setDensity(mode);
 })();
 
