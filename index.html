@@ -109,12 +109,17 @@ table.etf td{padding:8px 4px;border-bottom:1px solid rgba(30,45,69,.5);font-size
 table.etf tr:last-child td{border-bottom:none}
 table.etf tr:hover td{background:rgba(0,229,204,.03)}
 table.etf td.r{text-align:right}
+/* Breathing room at the table's left/right edges (headers keep full-width bg) */
+table.etf th:first-child,table.etf td:first-child{padding-left:16px}
+table.etf th:last-child,table.etf td:last-child{padding-right:16px}
 .etf-tkr{font-weight:700;font-size:12.5px;color:var(--white);letter-spacing:.8px}
 .etf-name{color:var(--mist);font-size:9.5px;margin-top:1px;letter-spacing:.3px}
 /* ── Density: 14" ultra-compact override (toggle adds .d14 to .etf-section) ── */
 .etf-section.d14 table.etf th{padding:4px 4px;font-size:8.5px;letter-spacing:.3px}
 .etf-section.d14 table.etf thead tr.tbl-group-row th{padding:4px 4px;font-size:8px}
 .etf-section.d14 table.etf td{padding:3.5px 4px;font-size:10px}
+.etf-section.d14 table.etf th:first-child,.etf-section.d14 table.etf td:first-child{padding-left:12px}
+.etf-section.d14 table.etf th:last-child,.etf-section.d14 table.etf td:last-child{padding-right:12px}
 .etf-section.d14 .etf-tkr{font-size:10.5px;letter-spacing:.3px}
 .etf-section.d14 .etf-name{font-size:8px}
 .etf-section.d14 .cx-bar{width:26px}
