@@ -3,3 +3,7 @@
 numpy>=1.24,<2
 pandas>=2.0,<3
 yfinance>=0.2.40,<0.3
+# yfinance price repair (repair=True en fetch) importa scipy en runtime —
+# en el Mac está global y no se nota; en CI sin esto TODOS los fetch fallan
+# con ModuleNotFoundError('scipy') (pasó en el primer run cloud, 2026-07-03).
+scipy>=1.10,<2
