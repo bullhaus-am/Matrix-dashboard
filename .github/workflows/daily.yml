@@ -1,0 +1,74 @@
+name: daily-matrix
+
+# Genera el Macro ETF Dashboard y lo publica a GitHub Pages (index.html +
+# snapshot del día, commiteados a main por el propio generate_dashboard.py).
+# Trigger principal: cron-job.org via workflow_dispatch (mismo patrón que
+# scoring-cloud — el scheduler nativo de GitHub es poco confiable, se deja
+# una ventana schedule como retry). La corrida local del Mac
+# (Run Dashboard.command) queda como backup manual.
+on:
+  schedule:
+    # Ventanas de RETRY (mar-sáb): el trigger principal es el dispatch de
+    # cron-job.org. El guard hace no-op si el día ya corrió.
+    - cron: '40 5 * * 2-6'
+    - cron: '40 7 * * 2-6'
+  workflow_dispatch:
+
+permissions:
+  contents: write             # generate_dashboard.py commitea index.html + snapshot
+
+concurrency:
+  group: daily-matrix
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard — ventana redundante hace no-op si el día ya corrió
+        id: guard
+        run: |
+          go=1
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            last=$(TZ=UTC git log -1 --format=%cd --date=format:'%Y-%m-%d' -- index.html snapshots)
+            today=$(date -u +%F)
+            if [ "$last" = "$today" ]; then
+              echo "dashboard ya publicado hoy ($last) — ventana redundante, no-op"
+              go=0
+            fi
+          fi
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v5
+        if: steps.guard.outputs.go == '1'
+        with:
+          python-version: '3.11'
+
+      # Caches locales del script (gitignored): etf_info evita re-fetch de
+      # metadata de ~120 ETFs; ai_analysis evita re-pagar el análisis si se
+      # re-corre el mismo día con la misma data.
+      - name: Restaurar caches
+        if: steps.guard.outputs.go == '1'
+        uses: actions/cache@v4
+        with:
+          path: |
+            .etf_info_cache.json
+            .ai_analysis_cache.json
+          key: matrix-caches-${{ github.run_id }}
+          restore-keys: matrix-caches-
+
+      - name: Instalar deps
+        if: steps.guard.outputs.go == '1'
+        run: pip install --quiet -r requirements.txt
+
+      - name: Generar dashboard + publicar a Pages
+        if: steps.guard.outputs.go == '1'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          python generate_dashboard.py --ai

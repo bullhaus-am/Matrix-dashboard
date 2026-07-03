@@ -1,0 +1,5 @@
+# Pinned dependencies for the Macro ETF Dashboard.
+# numpy<2 is required because some of the older yfinance/pandas combos break with numpy 2.x.
+numpy>=1.24,<2
+pandas>=2.0,<3
+yfinance>=0.2.40,<0.3
