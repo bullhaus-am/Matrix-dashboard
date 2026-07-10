@@ -2803,5 +2803,10 @@
     "date": "Jul 08, 2026",
     "score": 0.8,
     "regime": "Bonds"
+  },
+  {
+    "date": "Jul 09, 2026",
+    "score": 1.0,
+    "regime": "Bonds"
   }
 ]
