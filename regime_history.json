@@ -2818,5 +2818,10 @@
     "date": "Jul 13, 2026",
     "score": 0.8,
     "regime": "Bonds"
+  },
+  {
+    "date": "Jul 14, 2026",
+    "score": 0.7,
+    "regime": "Stocks"
   }
 ]
