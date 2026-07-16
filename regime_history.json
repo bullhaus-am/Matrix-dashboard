@@ -2823,5 +2823,10 @@
     "date": "Jul 14, 2026",
     "score": 0.7,
     "regime": "Stocks"
+  },
+  {
+    "date": "Jul 15, 2026",
+    "score": 0.8,
+    "regime": "Stocks"
   }
 ]
