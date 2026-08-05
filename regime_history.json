@@ -2893,5 +2893,10 @@
     "date": "Aug 03, 2026",
     "score": 0.9,
     "regime": "Stocks"
+  },
+  {
+    "date": "Aug 04, 2026",
+    "score": 1.0,
+    "regime": "Stocks"
   }
 ]
