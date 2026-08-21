@@ -2953,5 +2953,10 @@
     "date": "Aug 19, 2026",
     "score": 0.8,
     "regime": "Stocks"
+  },
+  {
+    "date": "Aug 20, 2026",
+    "score": 0.7,
+    "regime": "Stocks"
   }
 ]
