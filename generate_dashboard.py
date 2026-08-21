@@ -25,6 +25,7 @@ VOL_MULT       =  1.10  # volume > prev_day × this
 VOL_MA_LEN     =  50    # volume SMA period
 SLOPE_WINDOW   =  91    # bars for exponential regression
 MATRIX_BAND    =  0.015 # ±1.5% of MA100 for Neutral zone
+MOM_LOOKBACK   =  30    # bars back for the Momentum Ranking 30D variation
 TREND_MA       =  100   # MA period for trend/matrix signals
 OUTPUT_FILE    = "macro_etf_dashboard.html"
 
@@ -432,6 +433,106 @@ def compute_atr(df: pd.DataFrame, period: int = 5) -> float:
     atr = tr.ewm(alpha=1/period, adjust=False).mean().iloc[-1]
     return round(atr / c.iloc[-1] * 100, 2)
 
+# ── Momentum Ranking ──────────────────────────────────────────────────────────
+# Port of the workbook's "Overall Ranking" (Tablero!AN → CL): a blend of seven
+# cross-sectional ranks, each of which already has 1 = best, so the blend is
+# ranked *ascending* to produce the final position. Weights are the sheet's
+# active "Nuevo" set (Tablero row 8) and sum to 1.
+MOM_COMPONENTS = [          # (input field, weight) — weight cell · what is ranked
+    ("mom_t",     0.40),    # G8  · Momentum(t)
+    ("d_mom_adj", 0.05),    # I8  · ΔMomentum × relative volume
+    ("days_up8",  0.05),    # W8  · Days up (8)
+    ("d_t5",      0.05),    # Y8  · Δ(t-5) on the raw close
+    ("d_t22",     0.05),    # Z8  · Δ(t-22) ex last week
+    ("d_t132",    0.20),    # AA8 · Δ(t-132) ex last month
+    ("d_t264",    0.20),    # AB8 · Δ(t-264) ex last month
+]
+
+MOM_MIN_BARS = 264   # deepest lookback the components reach (the sheet's t-264)
+
+def momentum_inputs(df: pd.DataFrame, offset: int = 0) -> dict | None:
+    """Per-ETF raw inputs of the Momentum Ranking, as of `offset` bars back.
+
+    Mirrors the workbook's per-ticker Calculos block: EMA(3/50/100/200) of the
+    adjusted close, with Momentum written as the telescoping ladder of the four
+    EMA gaps over EMA3. The sheet lays days out in columns with today as "day 1",
+    so its "t-N" is N-1 bars back — the offsets below follow that convention.
+
+    One deliberate deviation: the sheet's EMA recursion bottoms out on a blank
+    cell, so it effectively seeds the running EMA at zero, while pandas seeds it
+    at the first price. Over the workbook's own 600-bar series that shifts
+    Momentum by ~0.3% and the final ranking by at most 3 places out of 120
+    (Spearman 0.9999); seeding at the first price converges faster, which matters
+    more here because we carry ~500 bars rather than 600.
+    """
+    n = len(df)
+    if n - offset < MOM_MIN_BARS:
+        return None
+    c, v = df["close"], df["volume"]
+    e3   = c.ewm(span=3,   adjust=False).mean().values
+    e50  = c.ewm(span=50,  adjust=False).mean().values
+    e100 = c.ewm(span=100, adjust=False).mean().values
+    e200 = c.ewm(span=200, adjust=False).mean().values
+    cv, vv, ret = c.values, v.values, c.pct_change().values
+
+    base = n - 1 - offset                      # the sheet's "day 1" bar
+    at = lambda arr, back: arr[base - back]
+
+    def momentum(back: int) -> float:
+        """Calculos row 133 — ((EMA3-EMA50)+(EMA50-EMA100)+(EMA100-EMA200))/EMA3."""
+        a3, a50, a100, a200 = (at(e3, back), at(e50, back),
+                               at(e100, back), at(e200, back))
+        if not a3:
+            return np.nan
+        return ((a3 - a50) + (a50 - a100) + (a100 - a200)) / a3 * 100
+
+    mom_t   = momentum(0)
+    mom_t22 = momentum(22)                     # Calculos!Y133 — column Y, 22 bars back
+    d_mom   = mom_t - mom_t22
+
+    vol5, vol30 = vv[base - 4:base + 1].mean(), vv[base - 29:base + 1].mean()
+    rel_vol = vol5 / vol30 if vol30 > 0 else np.nan
+
+    out = {
+        "mom_t": mom_t, "mom_t22": mom_t22, "d_mom": d_mom,
+        "rel_vol": rel_vol,
+        "d_mom_adj": d_mom * rel_vol,          # Tablero!CG · ΔMomentum × relative vol
+        "days_up8": float((ret[base - 7:base + 1] > 0).sum()) / 8,
+        "d_t5":   at(cv, 0)  / at(cv, 5)   * 100,   # raw close, C127/H127
+        "d_t22":  at(e3, 4)  / at(e3, 21)  * 100,   # EMA3, ex last week
+        "d_t132": at(e3, 21) / at(e3, 131) * 100,   # EMA3, ex last month
+        "d_t264": at(e3, 21) / at(e3, 263) * 100,   # EMA3, ex last month
+    }
+    # These land verbatim in the daily snapshot; 6 decimals is far more than the
+    # ranking needs and keeps the research dataset from doubling in size.
+    return {k: round(float(v), 6) for k, v in out.items()}
+
+def _momentum_overall(inputs: list) -> pd.Series:
+    """Blend the component ranks, then rank the blend — 1 = strongest ETF.
+
+    Components are ranked descending with Excel RANK's tie rule (ties share the
+    best rank), which matters for Days up (8): it only takes nine values, so
+    ties there are the norm rather than the exception. The final pass is
+    RANK.AVG ascending, matching Tablero!CL."""
+    df = pd.DataFrame([i or {} for i in inputs])
+    score = pd.Series(0.0, index=range(len(inputs)))
+    for field, weight in MOM_COMPONENTS:
+        col = pd.to_numeric(df[field], errors="coerce") if field in df \
+              else pd.Series(np.nan, index=score.index)
+        score = score + weight * col.rank(ascending=False, method="min")
+    return score.rank(ascending=True, method="average")
+
+def add_momentum_ranking(results: list) -> list:
+    """Attach today's Momentum Ranking plus its move over the last 30 sessions."""
+    today = _momentum_overall([r.get("mom") for r in results])
+    prior = _momentum_overall([r.get("mom30") for r in results])
+    for i, r in enumerate(results):
+        rt, rp = today.iloc[i], prior.iloc[i]
+        r["mom_rank"]    = int(rt) if pd.notna(rt) else None
+        r["mom_rank_30"] = int(rp) if pd.notna(rp) else None
+        r["mom_climb"]   = (int(rp) - int(rt)) if pd.notna(rt) and pd.notna(rp) else 0
+    return results
+
 def analyze(ticker, name, cat, df) -> dict | None:
     if len(df) < 300: return None
     cx0  = adj_slope_cx(df["close"], 0)
@@ -450,6 +551,9 @@ def analyze(ticker, name, cat, df) -> dict | None:
     atr_ratio = round(atr5_pct / atr50_pct, 3) if atr50_pct > 0 else 0.0
     # Net Close
     net_close = compute_net_close(df, 5)
+    # Momentum Ranking inputs — today and MOM_LOOKBACK sessions ago
+    mom   = momentum_inputs(df, 0)
+    mom30 = momentum_inputs(df, MOM_LOOKBACK)
     return {
         "ticker": ticker, "name": name, "category": cat,
         "close":  round(float(price), 2),
@@ -464,6 +568,7 @@ def analyze(ticker, name, cat, df) -> dict | None:
         "atr5_pct": atr5_pct,
         "atr_ratio": atr_ratio,
         "net_close": net_close,
+        "mom": mom, "mom30": mom30,
         **ad,
     }
 
@@ -673,7 +778,7 @@ def add_ranks(results: list) -> list:
     df['rank_today'] = df['cx'].rank(ascending=False, method='average').astype(int)
     df['rank_30ago'] = df['cx30'].rank(ascending=False, method='average').astype(int)
     df['rank_climb'] = df['rank_30ago'] - df['rank_today']
-    return df.to_dict('records')
+    return add_momentum_ranking(df.to_dict('records'))
 
 # ── Download ───────────────────────────────────────────────────────────────────
 def download_all():
@@ -1140,11 +1245,16 @@ def generate_html(results, matrix, trend_score_val, trend_history,
         acc_rank = acc_rank_by_ticker[r["ticker"]]
         acc_pctl = (1 - (acc_rank - 1) / max(total - 1, 1)) * 100
         ag = _grade_from_pctl(acc_pctl)
+        # Mom. Grade: same percentile logic applied to the Momentum Ranking
+        mr = r.get("mom_rank")
+        mg = _grade_from_pctl((1 - (mr - 1) / max(total - 1, 1)) * 100) if mr else ""
         row = {
             "tkr":r["ticker"],"name":r["name"],
             "y":round(r["yearly"]/100,4),"m3":round(r["perf_3m"]/100,4),"m1":round(r["perf_1m"]/100,4),"d1":round(r["perf_1d"]/100,4),
             "cx":r["cx"],"r":r["rank_today"],"r30":r["rank_30ago"],"climb":r["rank_climb"],
             "eg":eg,"ag":ag,
+            "mr":mr or 0,"mr30":r.get("mom_rank_30") or 0,
+            "mclimb":r.get("mom_climb",0),"mg":mg,
             "n50":r["net_50"],"n20":r["net_20"],"n5":r["net_5"],
             "nc":r.get("net_close",0),
             "e20":e20,"s50":s50,
@@ -1819,12 +1929,13 @@ function setDensity(mode){{
 // Category tabs
 function buildRows(cat,col,dir){{
   let d=applyFilters([...CAT_DATA[cat]]);
-  const keys=[null,'r','cx','climb','eg','n50','n20','n5','nc','ag','atr5','atrr','e20','s50','d1','m1','m3','y','op','aum','vusd','pe',null,'er'];
+  const keys=[null,'r','cx','climb','eg','mr','mclimb','mg','n50','n20','n5','nc','ag','atr5','atrr','e20','s50','d1','m1','m3','y','op','aum','vusd','pe',null,'er'];
   const k=keys[col];
   const INF_KEYS={{aum:1,vusd:1,pe:1,er:1}};
   const GRD_ORD={{'A+':6,A:5,B:4,C:3,D:2,E:1}};
   if(k==='eg'){{d.sort((a,b)=>dir==='asc'?(GRD_ORD[a.eg]||0)-(GRD_ORD[b.eg]||0):(GRD_ORD[b.eg]||0)-(GRD_ORD[a.eg]||0));}}
   else if(k==='ag'){{d.sort((a,b)=>dir==='asc'?(GRD_ORD[a.ag]||0)-(GRD_ORD[b.ag]||0):(GRD_ORD[b.ag]||0)-(GRD_ORD[a.ag]||0));}}
+  else if(k==='mg'){{d.sort((a,b)=>dir==='asc'?(GRD_ORD[a.mg]||0)-(GRD_ORD[b.mg]||0):(GRD_ORD[b.mg]||0)-(GRD_ORD[a.mg]||0));}}
   else if(INF_KEYS[k]){{d.sort((a,b)=>{{const av=(ETF_INFO[a.tkr]||{{}})[k],bv=(ETF_INFO[b.tkr]||{{}})[k];const ax=(av==null)?-Infinity:av,bx=(bv==null)?-Infinity:bv;return dir==='asc'?ax-bx:bx-ax;}});}}
   else if(k) d.sort((a,b)=>dir==='asc'?a[k]-b[k]:b[k]-a[k]);
   return d.map(e=>{{
@@ -1838,6 +1949,9 @@ function buildRows(cat,col,dir){{
     const ca=Math.abs(e.climb);
     const cc=e.climb>=5?'rb-up':e.climb<=-5?'rb-dn':'rb-flat';
     const ct=e.climb>=5?`↑${{e.climb}}`:e.climb<=-5?`↓${{ca}}`:`${{e.climb>0?'+':''}}${{e.climb}}`;
+    const mca=Math.abs(e.mclimb);
+    const mcc=e.mclimb>=5?'rb-up':e.mclimb<=-5?'rb-dn':'rb-flat';
+    const mct=e.mclimb>=5?`↑${{e.mclimb}}`:e.mclimb<=-5?`↓${{mca}}`:`${{e.mclimb>0?'+':''}}${{e.mclimb}}`;
     const n50c=e.n50>0?'var(--teal)':e.n50<0?'var(--red)':'var(--smoke)';
     const n20c=e.n20>0?'var(--teal)':e.n20<0?'var(--red)':'var(--smoke)';
     const n5c=e.n5>0?'var(--teal)':e.n5<0?'var(--red)':'var(--smoke)';
@@ -1854,6 +1968,9 @@ function buildRows(cat,col,dir){{
       <td class="r"><div class="cx-cell"><span class="${{cxc}}">${{e.cx.toFixed(3)}}</span><div class="cx-bar"><div class="cx-fill" style="width:${{cxP}}%;background:${{cxF}}"></div></div></div></td>
       <td class="r"><span class="rb ${{cc}}">${{ct}}</span></td>
       <td class="r"><span class="${{gradeClass(e.eg)}}">${{e.eg}}</span></td>
+      <td class="r" style="${{mono}};font-size:11px;border-left:1px solid var(--rule2)">${{e.mr?`<strong style="color:#e8eeff">#${{e.mr}}</strong>`:'<span style="color:var(--smoke)">—</span>'}}</td>
+      <td class="r"><span class="rb ${{mcc}}">${{mct}}</span></td>
+      <td class="r"><span class="${{gradeClass(e.mg)}}">${{e.mg}}</span></td>
       <td class="r" style="${{mono}};color:${{n50c}};border-left:1px solid var(--rule2)">${{e.n50>0?'+':''}}${{e.n50}}</td>
       <td class="r" style="${{mono}};color:${{n20c}}">${{e.n20>0?'+':''}}${{e.n20}}</td>
       <td class="r" style="${{mono}};color:${{n5c}}">${{e.n5>0?'+':''}}${{e.n5}}</td>
@@ -1891,19 +2008,20 @@ function sortTable(pid,cat,col){{
   const grpHdr=`<tr class="tbl-group-row">
     <th colspan="2" style="background:var(--bg3)"></th>
     <th colspan="3" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid rgba(0,229,204,.12)">Exp. Regression</th>
+    <th colspan="3" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Momentum Ranking</th>
     <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Accumulation / Distribution</th>
     <th colspan="4" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Volatility & Moving Averages</th>
     <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Performance</th>
     <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">ETF Info</th>
   </tr>`;
-  const hdrs=['ETF','Rank','Exp. Score','30D Var','Exp. Grade','Net 50D','Net 20D','Net 5D','Net Close 5D','Acc. Grade','ATR 5%','ATR Ratio','EMA20%','SMA50%','Perf 1D','Perf 1M','Perf 3M','Annual','Operable','AUM','Avg Vol $','P/E','Comp','Exp Ratio'];
+  const hdrs=['ETF','Rank','Exp. Score','30D Var','Exp. Grade','Mom. Rank','30D Var','Mom. Grade','Net 50D','Net 20D','Net 5D','Net Close 5D','Acc. Grade','ATR 5%','ATR Ratio','EMA20%','SMA50%','Perf 1D','Perf 1M','Perf 3M','Annual','Operable','AUM','Avg Vol $','P/E','Comp','Exp Ratio'];
   document.getElementById('catTabs').innerHTML=cats.map((c,i)=>`<button class="cat-tab ${{i===0?'on':''}}" onclick="swTab(this,'cp${{i}}')">${{c}}</button>`).join('');
   document.getElementById('catPanels').innerHTML=cats.map((cat,i)=>{{
     const pid=`cp${{i}}`;
     SORT_STATE[pid]={{col:1,dir:'asc'}};
     const ths=hdrs.map((h,ci)=>{{
       const cls=ci===0?'':' class="r"';
-      const bl=(ci===5||ci===10||ci===14||ci===19)?' style="border-left:1px solid var(--rule2)"':'';
+      const bl=(ci===5||ci===8||ci===13||ci===17||ci===22)?' style="border-left:1px solid var(--rule2)"':'';
       const s=(ci>0&&h!=='Comp')?`onclick="sortTable('${{pid}}','${{cat}}',${{ci}})"` :'';
       return`<th${{cls}} ${{s}}${{bl}}>${{h}}${{ci===1?' ▲':''}}</th>`;
     }}).join('');
