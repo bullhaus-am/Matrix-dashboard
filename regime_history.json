@@ -3098,5 +3098,10 @@
     "date": "Sep 30, 2026",
     "score": 0.6,
     "regime": "Stocks"
+  },
+  {
+    "date": "Oct 01, 2026",
+    "score": 0.6,
+    "regime": "Stocks"
   }
 ]
