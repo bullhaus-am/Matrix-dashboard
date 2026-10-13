@@ -250,7 +250,23 @@ CAT_DISPLAY = {
 # ── Extra tickers needed for Trend Score and Matrix ────────────────────────────
 EXTRA_TICKERS = ['HYG','IEI','ISCB','ILCB','IMCG','IMCV','RSPD','RSPS','IDU','GLD',
                  'ARKK','TLT','SLV','CPER','WOOD','EEM','ARGT','QQQJ','QQQ',
-                 'FFTY','IVV','GSG','MTUM']
+                 'FFTY','IVV','GSG','MTUM','IJR']
+
+# Proxies por historia corta (2026-10-13): Yahoo truncó la historia de ISCB e
+# ILCB a julio 2026 (61 barras). Como el Trend Score y la Matrix alineaban
+# TODOS los tickers con un dropna() global, el par corto dejaba 61 filas para
+# todo el modelo: MA100 = NaN → trend 0%, chart de 252 días vacío, Matrix
+# toda Neutral. Ahora cada par se alinea por separado y, si un ticker trae
+# menos de MIN_HISTORY barras, se usa su proxy (misma lectura: small vs large
+# con S&P 600 / S&P 500). Cuando Yahoo vuelva a servir la historia completa,
+# el proxy deja de usarse solo.
+HISTORY_PROXY = {'ISCB': 'IJR', 'ILCB': 'IVV'}
+MIN_HISTORY   = TREND_MA + 20
+
+# Modelo del análisis AI. 2026-10-13: claude-sonnet-4-20250514 ya no existe y
+# la API devolvía HTTP 400 (la sección AI quedaba vacía en cada corrida).
+AI_MODEL       = "claude-sonnet-5-5"
+AI_MODEL_LABEL = "claude-sonnet-5.5"
 
 # ── Data fetching ──────────────────────────────────────────────────────────────
 def _us_session_in_progress() -> bool:
@@ -573,6 +589,38 @@ def analyze(ticker, name, cat, df) -> dict | None:
     }
 
 # ── Trend Score ────────────────────────────────────────────────────────────────
+def _aligned(prices: dict, *tickers) -> list[pd.Series]:
+    """Inner-join the given series on their dates and drop NaN rows.
+
+    Alinear por par (y no todos los tickers juntos) evita que un único ticker
+    con historia corta o huecos recorte la serie de todo el modelo."""
+    df = pd.concat([prices[t] for t in tickers], axis=1, join="inner", keys=tickers).dropna()
+    return [df[t] for t in tickers]
+
+
+def build_price_series(all_data: dict, tickers: list[str]) -> dict:
+    """Close series por ticker para Trend Score / Matrix, con proxies.
+
+    Un ticker con menos de MIN_HISTORY barras se reemplaza por su proxy de
+    HISTORY_PROXY (con warning); si tampoco hay proxy, queda como esté y el
+    sub-score correspondiente será 0 en vez de romper el modelo entero."""
+    prices = {}
+    for t in tickers:
+        s = all_data[t]["close"].dropna() if t in all_data else pd.Series(dtype=float)
+        if len(s) < MIN_HISTORY:
+            proxy = HISTORY_PROXY.get(t)
+            ps = all_data[proxy]["close"].dropna() if proxy and proxy in all_data else None
+            if ps is not None and len(ps) >= MIN_HISTORY:
+                log.warning("%s: only %d bars from Yahoo (< %d) — using proxy %s (%d bars).",
+                            t, len(s), MIN_HISTORY, proxy, len(ps))
+                s = ps
+            else:
+                log.warning("%s: only %d bars from Yahoo (< %d) and no proxy — "
+                            "its sub-scores will read 0.", t, len(s), MIN_HISTORY)
+        prices[t] = s
+    return prices
+
+
 def compute_trend_score(prices: dict) -> tuple[float, list]:
     """9 sub-scores / 10. Returns (score, [sub_scores]).
     Aligned with fred_liquidity_dashboard.py:
@@ -585,9 +633,12 @@ def compute_trend_score(prices: dict) -> tuple[float, list]:
     delta = ma100 - ma100.shift(10)                                     # shift 10 (era 12)
 
     def ratio(num, den):
-        return prices[num] / prices[den] * 100                         # crudo, sin indexar
+        a, b = _aligned(prices, num, den)
+        return a / b * 100                                             # crudo, sin indexar
 
     def above_ma(series):
+        if len(series) < TREND_MA:                                     # sin historia → 0
+            return 0
         ma = series.rolling(TREND_MA).mean()
         return 1 if series.iloc[-1] > ma.iloc[-1] else 0
 
@@ -692,7 +743,11 @@ def compute_matrix(prices: dict) -> list[dict]:
             v = s.iloc[-1]; m = ma.iloc[-1]
             hi = m * (1 + MATRIX_BAND); lo = m * (1 - MATRIX_BAND)
         else:
-            r = prices[num] / prices[den]
+            a, b = _aligned(prices, num, den)
+            if len(a) < TREND_MA:                                      # sin historia → Neutral
+                results.append({'n': name, 'sig': 'Neutral', 'f': 0, 'pct': 50})
+                continue
+            r = a / b
             idx = (r / r.iloc[0]) * 100
             ma = idx.rolling(TREND_MA).mean()
             v = idx.iloc[-1]; m = ma.iloc[-1]
@@ -707,27 +762,22 @@ def compute_matrix(prices: dict) -> list[dict]:
     return results
 
 # ── Trend history ──────────────────────────────────────────────────────────────
-def build_trend_history(prices: dict, n_days: int = 20) -> list[dict]:
-    """Compute trend score for last n_days using rolling window."""
+def build_trend_history(prices: dict, n_days: int = 252) -> list[dict]:
+    """Trend Score de las últimas n_days sesiones (ventana rodante por fecha).
+
+    Cada día se recorta cada serie hasta la fecha de esa sesión (IVV manda el
+    calendario) y se recomputa el score, igual que si se hubiera corrido ese
+    día. Recortar por fecha y no por posición tolera tickers con distinta
+    cantidad de barras."""
     ivv = prices['IVV']
     history = []
-    labels = ['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
-              'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct']
-
-    for offset in range(n_days - 1, -1, -1):
-        shifted = {k: v.iloc[:len(v)-offset] if offset > 0 else v
-                   for k, v in prices.items()}
-        # Need aligned series
-        aligned = pd.DataFrame(shifted).dropna()
-        p = {k: aligned[k] for k in shifted if k in aligned.columns}
-        if len(aligned) < TREND_MA + 20:
+    for offset in range(min(n_days, len(ivv)) - 1, -1, -1):
+        cutoff = ivv.index[-1 - offset]
+        p = {t: v.loc[:cutoff] for t, v in prices.items()}
+        if len(p['IVV']) < TREND_MA + 15:
             continue
         score, _ = compute_trend_score(p)
-        date = ivv.index[-1 - offset] if offset < len(ivv.index) else ivv.index[0]
-        history.append({
-            'd': date.strftime('%b %d'),
-            's': score,
-        })
+        history.append({'d': cutoff.strftime('%b %d'), 's': score})
     return history
 
 # ── Daily snapshot (research / backtesting dataset) ───────────────────────────
@@ -1003,7 +1053,7 @@ def _ai_cache_save(cache: dict):
 def call_claude_analysis(ranked, matrix, trend_score_val, trend_history,
                           regime, regime_days, date_str):
     """Call Claude API with full ETF data for deep analysis."""
-    import urllib.request, json as _json
+    import urllib.request, urllib.error, json as _json
 
     api_key = ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
@@ -1099,7 +1149,7 @@ Write exactly 5 sections. Dense analytical prose, no bullet points, cite exact t
         return cache[cache_key]
 
     body = _json.dumps({
-        "model": "claude-sonnet-4-20250514",
+        "model": AI_MODEL,
         "max_tokens": 2000,
         "system": system_prompt,
         "messages": [{"role": "user", "content": user_content}],
@@ -1125,6 +1175,13 @@ Write exactly 5 sections. Dense analytical prose, no bullet points, cite exact t
                 cache = dict(list(cache.items())[-30:])
             _ai_cache_save(cache)
             return text
+    except urllib.error.HTTPError as e:
+        try:
+            detail = e.read().decode("utf-8", "replace")[:400]
+        except Exception:
+            detail = ""
+        log.error("Claude API error: %s — %s", e, detail)
+        return ""
     except Exception as e:
         log.error("Claude API error: %s", e)
         return ""
@@ -1181,7 +1238,7 @@ def format_ai_html(analysis_text, date_str):
 
     return f'''<div class="ai-header">
       <div class="ai-badge">Claude Analysis</div>
-      <div class="ai-model">Generated {date_str} · claude-sonnet-4 · Full 120-ETF dataset</div>
+      <div class="ai-model">Generated {date_str} · {AI_MODEL_LABEL} · Full 120-ETF dataset</div>
     </div>
     <div class="ai-body">
       <div class="ai-col">{col1}</div>
@@ -1438,6 +1495,17 @@ table.etf th:first-child,table.etf td:first-child{{padding-left:16px}}
 table.etf th:last-child,table.etf td:last-child{{padding-right:16px}}
 .etf-tkr{{font-weight:700;font-size:12.5px;color:var(--white);letter-spacing:.8px}}
 .etf-name{{color:var(--mist);font-size:9.5px;margin-top:1px;letter-spacing:.3px}}
+.etf-cell{{display:flex;align-items:center;gap:7px}}
+.fav-star{{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0;color:rgba(255,255,255,.18);font-family:inherit;transition:color .15s,transform .1s}}
+.fav-star:hover{{color:var(--amber);transform:scale(1.2)}}
+.fav-star.active{{color:var(--amber)}}
+table.etf tr.wl-head td{{background:var(--amber2);border-bottom:1px solid rgba(245,158,11,.25);padding:7px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--amber);cursor:pointer;user-select:none}}
+table.etf tr.wl-head:hover td{{background:rgba(245,158,11,.14)}}
+.wl-cnt{{color:rgba(245,158,11,.6);font-weight:500;margin-left:8px}}
+.wl-chev{{float:right;color:rgba(245,158,11,.6);transition:transform .2s}}
+.wl-chev.collapsed{{transform:rotate(-90deg)}}
+table.etf tr.wl-row td{{background:rgba(245,158,11,.03)}}
+table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,11,.25)}}
 /* ── Density: 14" ultra-compact override (toggle adds .d14 to .etf-section) ── */
 .etf-section.d14 table.etf th{{padding:4px 4px;font-size:8.5px;letter-spacing:.3px}}
 .etf-section.d14 table.etf thead tr.tbl-group-row th{{padding:4px 4px;font-size:8px}}
@@ -1446,6 +1514,8 @@ table.etf th:last-child,table.etf td:last-child{{padding-right:16px}}
 .etf-section.d14 table.etf th:last-child,.etf-section.d14 table.etf td:last-child{{padding-right:12px}}
 .etf-section.d14 .etf-tkr{{font-size:10.5px;letter-spacing:.3px}}
 .etf-section.d14 .etf-name{{font-size:8px}}
+.etf-section.d14 .fav-star{{font-size:12px}}
+.etf-section.d14 table.etf tr.wl-head td{{padding:4px 12px;font-size:8px}}
 .etf-section.d14 .cx-bar{{width:26px}}
 .etf-section.d14 .cx-cell{{gap:5px}}
 .etf-section.d14 .gp,.etf-section.d14 .op{{min-width:0;padding:1.5px 5px;font-size:9.5px}}
@@ -1652,6 +1722,7 @@ table.etf th:last-child,table.etf td:last-child{{padding-right:16px}}
       <button class="filter-toggle" data-mode="op">Operable</button>
       <button class="filter-toggle" data-mode="vo">Volat OK</button>
       <button class="filter-toggle" data-mode="nx">Not Extended</button>
+      <button class="filter-toggle" data-mode="fav" title="Only the ETFs starred as favorites">★ Favs</button>
       <span class="filter-sep"></span>
       <div class="filter-multi" id="fltEgWrap" data-key="eg">
         <button class="filter-multi-btn" type="button">Exp Grade</button>
@@ -1757,6 +1828,28 @@ document.getElementById('springsGrid').innerHTML=SPRINGS.map((s,i)=>{{
 }}).join('');
 
 // Filters
+// Favorites (★) — localStorage, mismo patrón que la watchlist del scoring.
+// Los favoritos se fijan arriba de cada tab (sección colapsable) y además se
+// pueden filtrar con el toggle "★ Favs".
+const FAV_KEY='matrix_favorites';
+const NCOLS=27;   // = hdrs.length (colspan de las filas de la sección Favorites)
+let WL_OPEN=true;
+function getFavs(){{try{{const v=JSON.parse(localStorage.getItem(FAV_KEY)||'[]');return Array.isArray(v)?v:[];}}catch(e){{return [];}}}}
+function saveFavs(a){{try{{localStorage.setItem(FAV_KEY,JSON.stringify(a));}}catch(e){{}}}}
+function isFav(t){{return getFavs().includes(t);}}
+function toggleFav(t,ev){{
+  if(ev) ev.stopPropagation();
+  let f=getFavs();
+  f=f.includes(t)?f.filter(x=>x!==t):[...f,t];
+  saveFavs(f);
+  refreshAllPanels();
+}}
+function toggleWl(){{WL_OPEN=!WL_OPEN;refreshAllPanels();}}
+function favBtn(t){{
+  const on=isFav(t);
+  return`<button class="fav-star ${{on?'active':''}}" onclick="toggleFav('${{t}}',event)" title="${{on?'Remove from favorites':'Add to favorites'}}">★</button>`;
+}}
+
 const FILTERS={{tkr:'',mode:'all',eg:[],ag:[]}};
 const GRADE_LABEL={{eg:'Exp Grade',ag:'Acc Grade'}};
 
@@ -1767,6 +1860,7 @@ function applyFilters(rows){{
     if(FILTERS.mode==='op' && !e.op) return false;
     if(FILTERS.mode==='vo' && !e.vo) return false;
     if(FILTERS.mode==='nx' && !e.nx) return false;
+    if(FILTERS.mode==='fav' && !isFav(e.tkr)) return false;
     if(FILTERS.eg.length && !FILTERS.eg.includes(e.eg)) return false;
     if(FILTERS.ag.length && !FILTERS.ag.includes(e.ag)) return false;
     return true;
@@ -1927,8 +2021,7 @@ function setDensity(mode){{
 }})();
 
 // Category tabs
-function buildRows(cat,col,dir){{
-  let d=applyFilters([...CAT_DATA[cat]]);
+function sortRows(d,col,dir){{
   const keys=[null,'r','cx','climb','eg','mr','mclimb','mg','n50','n20','n5','nc','ag','atr5','atrr','e20','s50','d1','m1','m3','y','op','aum','vusd','pe',null,'er'];
   const k=keys[col];
   const INF_KEYS={{aum:1,vusd:1,pe:1,er:1}};
@@ -1938,7 +2031,20 @@ function buildRows(cat,col,dir){{
   else if(k==='mg'){{d.sort((a,b)=>dir==='asc'?(GRD_ORD[a.mg]||0)-(GRD_ORD[b.mg]||0):(GRD_ORD[b.mg]||0)-(GRD_ORD[a.mg]||0));}}
   else if(INF_KEYS[k]){{d.sort((a,b)=>{{const av=(ETF_INFO[a.tkr]||{{}})[k],bv=(ETF_INFO[b.tkr]||{{}})[k];const ax=(av==null)?-Infinity:av,bx=(bv==null)?-Infinity:bv;return dir==='asc'?ax-bx:bx-ax;}});}}
   else if(k) d.sort((a,b)=>dir==='asc'?a[k]-b[k]:b[k]-a[k]);
-  return d.map(e=>{{
+  return d;
+}}
+function buildRows(cat,col,dir){{
+  const d=sortRows(applyFilters([...CAT_DATA[cat]]),col,dir);
+  const favs=getFavs();
+  let out='';
+  if(favs.length && FILTERS.mode!=='fav'){{
+    const fr=sortRows((CAT_DATA['All']||[]).filter(e=>favs.includes(e.tkr)),col,dir);
+    out+=`<tr class="wl-head" onclick="toggleWl()"><td colspan="${{NCOLS}}">★ Favorites<span class="wl-cnt">${{fr.length}}</span><span class="wl-chev ${{WL_OPEN?'':'collapsed'}}">▾</span></td></tr>`;
+    if(WL_OPEN) out+=fr.map(e=>rowHtml(e,'wl-row')).join('')+`<tr class="wl-end"><td colspan="${{NCOLS}}"></td></tr>`;
+  }}
+  return out+d.map(e=>rowHtml(e,'')).join('');
+}}
+function rowHtml(e,cls){{
     const yc=e.y>.005?'pos':e.y<-.005?'neg':'';
     const m3c=e.m3>.005?'pos':e.m3<-.005?'neg':'';
     const m1c=e.m1>.005?'pos':e.m1<-.005?'neg':'';
@@ -1962,8 +2068,8 @@ function buildRows(cat,col,dir){{
     const mono="font-family:'IBM Plex Mono',monospace;font-weight:500";
     const gradeClass=g=>'gp gp-'+(g==='A+'?'aplus':String(g||'').toLowerCase());
     const inf=ETF_INFO[e.tkr]||{{}};
-    return`<tr>
-      <td><div class="etf-tkr">${{e.tkr}}</div><div class="etf-name">${{e.name}}</div></td>
+    return`<tr class="${{cls}}">
+      <td><div class="etf-cell">${{favBtn(e.tkr)}}<div><div class="etf-tkr">${{e.tkr}}</div><div class="etf-name">${{e.name}}</div></div></div></td>
       <td class="r" style="${{mono}};font-size:11px"><strong style="color:#e8eeff">#${{e.r}}</strong></td>
       <td class="r"><div class="cx-cell"><span class="${{cxc}}">${{e.cx.toFixed(3)}}</span><div class="cx-bar"><div class="cx-fill" style="width:${{cxP}}%;background:${{cxF}}"></div></div></div></td>
       <td class="r"><span class="rb ${{cc}}">${{ct}}</span></td>
@@ -1991,7 +2097,6 @@ function buildRows(cat,col,dir){{
       <td class="r">${{compCell(e.tkr)}}</td>
       <td class="r" style="${{mono}}">${{fmtEr(inf.er)}}</td>
     </tr>`;
-  }}).join('');
 }}
 function sortTable(pid,cat,col){{
   const st=SORT_STATE[pid]||{{col:1,dir:'asc'}};
@@ -2084,35 +2189,21 @@ if __name__ == "__main__":
     # Build aligned price series for trend/matrix
     matrix_tickers = list(set(t for _,n,d,_ in MATRIX_DEFS for t in [n, d] if d) |
                           {'IVV','HYG','IEI','ISCB','ILCB','IMCG','IMCV','RSPD','RSPS','IDU','GLD','GSG'})
-    price_df = pd.DataFrame({
-        t: all_data[t]["close"]
-        for t in matrix_tickers if t in all_data
-    }).dropna()
-    prices = {t: price_df[t] for t in price_df.columns}
+    prices = build_price_series(all_data, matrix_tickers)
 
     # Trend Score + history
     print("\nComputing Trend Score...")
     trend_score_val, sub_scores = compute_trend_score(prices)
     print(f"  Score: {trend_score_val} | sub-scores: {sub_scores}")
+    if trend_score_val == 0 and not any(sub_scores):
+        log.warning("Trend Score is 0 with every sub-score at 0 — check the "
+                    "price history (short tickers / NaN) before trusting it.")
 
     # Build 252-day trend history
     print("Building trend history...")
-    trend_history = []
-    close_ivv = all_data['IVV']['close']
-    for offset in range(251, -1, -1):
-        shifted = {t: price_df[t].iloc[:len(price_df)-offset] if offset > 0 else price_df[t]
-                   for t in prices}
-        al = pd.DataFrame(shifted).dropna()
-        if len(al) < TREND_MA + 15:
-            continue
-        p = {t: al[t] for t in al.columns}
-        s, _ = compute_trend_score(p)
-        idx = -1 - offset
-        if abs(idx) <= len(close_ivv.index):
-            d = close_ivv.index[idx].strftime('%b %d')
-        else:
-            d = f"T-{offset}"
-        trend_history.append({"d": d, "s": s})
+    trend_history = build_trend_history(prices, 252)
+    if not trend_history:
+        log.warning("Trend history is EMPTY — the 252-day chart will render blank.")
 
     # ── Persistent regime history — correct hysteresis over full score series ──
     import json as _json2

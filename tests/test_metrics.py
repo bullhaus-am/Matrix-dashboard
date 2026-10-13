@@ -202,3 +202,51 @@ def test_compute_regime_flips_back_to_bonds():
     regime, days = gd.compute_regime(series, threshold=0.7, confirm_days=20)
     assert regime == "Bonds"
     assert days == 25
+
+
+# ── Short-history tickers (2026-10-13: Yahoo truncó ISCB/ILCB a 61 barras) ──
+def _close_df(n, start=100.0, step=0.1, first="2020-01-01"):
+    idx = pd.date_range(first, periods=n, freq="B")
+    closes = start + step * np.arange(n)
+    return pd.DataFrame({"close": closes}, index=idx)
+
+
+def test_build_price_series_uses_proxy_when_history_is_short():
+    all_data = {
+        "ISCB": _close_df(61),
+        "IJR":  _close_df(500),
+        "IVV":  _close_df(500),
+    }
+    prices = gd.build_price_series(all_data, ["ISCB", "IVV"])
+    assert len(prices["ISCB"]) == 500            # proxy IJR, not the 61-bar series
+    assert prices["ISCB"].equals(all_data["IJR"]["close"])
+    assert len(prices["IVV"]) == 500
+
+
+def test_build_price_series_keeps_long_history_untouched():
+    all_data = {"ISCB": _close_df(500, start=50), "IJR": _close_df(500), "IVV": _close_df(500)}
+    prices = gd.build_price_series(all_data, ["ISCB", "IVV"])
+    assert prices["ISCB"].equals(all_data["ISCB"]["close"])
+
+
+def test_aligned_inner_joins_on_dates():
+    a = _close_df(500)["close"]
+    b = _close_df(61, first="2021-08-02")["close"]
+    x, y = gd._aligned({"a": a, "b": b}, "a", "b")
+    assert len(x) == len(y) == 61
+    assert (x.index == y.index).all()
+
+
+def test_trend_score_survives_one_short_ticker():
+    """Un solo ticker corto no debe dejar el score en 0/0/0 ni vaciar la historia."""
+    n = 500
+    tickers = ['IVV','HYG','IEI','ISCB','ILCB','IMCG','IMCV','RSPD','RSPS','IDU','GLD','GSG']
+    prices = {t: _close_df(n, start=100, step=0.2)["close"] for t in tickers}   # todo en uptrend
+    prices['IEI'] = _close_df(n, start=100, step=-0.05)["close"]                # HY/Tsy sube
+    prices['ILCB'] = _close_df(61, start=100, step=0.0, first="2021-11-01")["close"]  # corto, sin proxy
+    score, subs = gd.compute_trend_score(prices)
+    assert subs[0] == 2 and subs[1] == 1 and subs[2] == 1    # IVV y HY/Tsy intactos
+    assert score >= 0.4   # ratios planos = 0; lo que importa es que no sea 0/0/0
+    hist = gd.build_trend_history(prices, 252)
+    assert len(hist) == 252
+    assert all(h["s"] > 0 for h in hist)
