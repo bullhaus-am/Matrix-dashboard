@@ -548,7 +548,8 @@ CONSTRAINTS:
 - Every claim points at specific pairs, components, spreads or tickers with their numbers. Every actionable idea names instruments, a direction (long / short / avoid / watch), a horizon and what would invalidate it; if the data does not support a trade, say "no trade" explicitly — that is a valid, valuable answer.
 - Distinguish what is already in price (long-standing Bullish/Bearish streaks) from what is changing (recent flips, edge flags, streak breaks). Flag contradictions between signals instead of smoothing them over.
 - No generic macro commentary, no definitions, no restating the dashboard. Concrete and opinionated; a sentence that could be written on any day should not be written.
-- Write in Spanish (rioplatense, voseo is fine), keep tickers, pair names and signal labels (Bullish / Neutral / Bearish, Stocks / Bonds) exactly as they appear in the data. Numbers in the text as in the data (percentages with one decimal at most)."""
+- Write in Spanish (rioplatense, voseo is fine), keep tickers, pair names and signal labels (Bullish / Neutral / Bearish, Stocks / Bonds) exactly as they appear in the data. Numbers in the text as in the data (percentages with one decimal at most).
+- Deliver final text only: no self-corrections, no questions to yourself, no parentheses revising a figure you just wrote. Check a number before writing it; if it does not add up, leave it out."""
 
 WEEKLY_TASK = """THIS NOTE: the weekly deep read (Friday session). day_type = "weekly". Rank 3 to 6 insights by conviction, each tied to specific signals with its invalidation. Several watch_triggers: the signals closest to changing, with current level, the level that changes them and the implication. Several contradictions, each with which side you trust and why. blind_spots as a paragraph. changes_vs_previous against the week's daily notes: what they got right, what they missed, what you are changing. Dense prose is fine here."""
 
