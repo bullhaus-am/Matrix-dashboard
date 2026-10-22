@@ -1062,6 +1062,24 @@ def call_claude_analysis(ranked, matrix, trend_score_val, trend_history,
 
     log.info("Calling Claude API for AI analysis...")
 
+    # Duración promedio real de los regímenes completos (antes era un 43 fijo
+    # que ya no describía la historia: hoy el promedio ronda las 80 sesiones).
+    regime_avg_days = 43
+    try:
+        runs, cur, n = [], None, 0
+        for e in load_regime_history():
+            if e.get("regime") == cur:
+                n += 1
+            else:
+                if cur is not None:
+                    runs.append(n)
+                cur, n = e.get("regime"), 1
+        completed = runs[1:]                      # sin el primer run (artefacto del arranque)
+        if completed:
+            regime_avg_days = round(sum(completed) / len(completed))
+    except Exception as e:
+        log.warning("Could not compute the average regime length (%s); using %d.", e, regime_avg_days)
+
     etf_rows = [{
         "ticker":              r["ticker"],
         "name":                r["name"],
@@ -1082,7 +1100,7 @@ def call_claude_analysis(ranked, matrix, trend_score_val, trend_history,
 
     payload = {
         "date": date_str, "regime": regime, "regime_days": regime_days,
-        "regime_avg_days": 43,
+        "regime_avg_days": regime_avg_days,
         "trend_score_pct": int(trend_score_val * 100),
         "trend_threshold_pct": 70,
         "trend_history_20d": [int(round(h["s"] * 100)) for h in trend_history[-20:]],
@@ -1109,10 +1127,10 @@ Each ETF has these fields:
 
 The model tracks:
 - Trend Score (0-100%): 9 macro sub-scores. Threshold 70% = Stocks regime.
-- Regime (Bonds/Stocks): hysteresis — Bonds→Stocks needs 20 consecutive days ≥70%. Average regime duration is 43 trading days.
+- Regime (Bonds/Stocks): hysteresis — Bonds→Stocks needs 20 consecutive days ≥70%, Stocks→Bonds needs 20 consecutive days <70%. The average completed regime lasts `regime_avg_days` trading days (computed from the model's own history and given in the payload).
 - Matrix: 17 ETF-pair ratios vs MA100 ±1.5% band — Bullish/Neutral/Bearish.
 
-TEMPORAL CONTEXT: If the regime has lasted N days and the average is 43, the regime is N/43 = X% through its average cycle. Use this to frame how late or early we are in the current regime.
+TEMPORAL CONTEXT: If the regime has lasted N days and the average is regime_avg_days, the regime is N/regime_avg_days = X% through its average cycle. Use this to frame how late or early we are in the current regime.
 
 ANOMALY DETECTION: Actively look for patterns that are NOT obvious. Examples of anomalies worth flagging:
 - An ETF with strong accumulation on all 3 horizons (50d/20d/5d) despite a bearish regime
@@ -1148,9 +1166,13 @@ Write exactly 5 sections. Dense analytical prose, no bullet points, cite exact t
         log.info("AI analysis cache hit — reusing previous result (no API cost).")
         return cache[cache_key]
 
+    # Sonnet 5.5 piensa siempre (adaptive) y el thinking consume max_tokens:
+    # con 2000 la prosa de 5 secciones salía truncada o vacía. effort medium
+    # acota el thinking; 8000 deja lugar de sobra para el texto.
     body = _json.dumps({
         "model": AI_MODEL,
-        "max_tokens": 2000,
+        "max_tokens": 8000,
+        "output_config": {"effort": "medium"},
         "system": system_prompt,
         "messages": [{"role": "user", "content": user_content}],
     }).encode("utf-8")
@@ -1162,11 +1184,21 @@ Write exactly 5 sections. Dense analytical prose, no bullet points, cite exact t
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=180) as resp:
             result = _json.loads(resp.read().decode("utf-8"))
-            text = result["content"][0]["text"]
+            stop = result.get("stop_reason")
+            if stop == "refusal":
+                log.error("Claude API refused the request (stop_details=%s).", result.get("stop_details"))
+                return ""
+            # El primer bloque puede ser `thinking` (Sonnet 5.5): tomar el de texto.
+            text = next((b.get("text", "") for b in result.get("content", []) if b.get("type") == "text"), "")
+            if not text:
+                log.error("Claude API returned no text block (stop_reason=%s).", stop)
+                return ""
+            if stop == "max_tokens":
+                log.warning("Claude API hit max_tokens — the analysis may be truncated.")
             usage = result["usage"]
-            cost = (usage["input_tokens"] / 1e6 * 3) + (usage["output_tokens"] / 1e6 * 15)
+            cost = (usage["input_tokens"] / 1e6 * 2) + (usage["output_tokens"] / 1e6 * 10)   # Sonnet 5.5
             log.info("Analysis done — %s in / %s out tokens · $%.4f",
                      usage["input_tokens"], usage["output_tokens"], cost)
             cache[cache_key] = text
