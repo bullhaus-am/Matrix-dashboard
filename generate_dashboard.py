@@ -1,7 +1,8 @@
 """
 generate_dashboard.py
 =====================
-Generates the Macro ETF Monitor dashboard HTML from Yahoo Finance data.
+Generates the Macro ETF Monitor dashboard HTML from Yahoo Finance data
+(+ optional Macro Insights note via macro_insights.py).
 
 Usage:
     python generate_dashboard.py
@@ -10,7 +11,7 @@ Output:
     macro_etf_dashboard.html
 """
 
-import os, sys, time, json, logging, hashlib, random
+import os, sys, time, json, logging, random
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -32,7 +33,6 @@ OUTPUT_FILE    = "macro_etf_dashboard.html"
 FETCH_WORKERS    = int(os.environ.get("DASHBOARD_FETCH_WORKERS", "4"))
 FETCH_RETRIES    = 4
 FETCH_JITTER     = (0.10, 0.30)  # per-call random sleep range (seconds)
-AI_CACHE_FILE    = ".ai_analysis_cache.json"
 ETF_INFO_CACHE_FILE = ".etf_info_cache.json"
 ETF_INFO_TTL_DAYS   = 7   # AUM / composition move slowly — refresh weekly
 
@@ -52,7 +52,6 @@ def _load_dotenv():
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 _load_dotenv()
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -62,102 +61,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("dashboard")
 
-# ── ETF Top Holdings (hardcoded, equity ETFs only) ────────────────────────────
-ETF_HOLDINGS_CONTEXT = """
-ARGT: MercadoLibre 19.1%, YPF 7.9%, Grupo Financiero Galicia 6.2%, Vista EnergyB de CV AD 6.1%, SSR Mining 6.0%
-ARKK: Tesla 10.4%, CRISPR Therapeutics AG 6.9%, Tempus AI com 5.2%, Roku 5.0%, Shopify Registered Sh 4.4%
-ASEA: DBS Group Holdings 15.7%, Oversea-Chinese Banking C 9.5%, United Overseas Bank 6.2%, Singapore Telecommunicati 4.9%, Delta Electronics (Thaila 4.4%
-BOTZ: ABB 10.5%, NVIDIA 9.9%, Fanuc 9.7%, Keyence 6.4%, Intuitive Surgical 5.8%
-ECH: Sociedad Quimica Y Minera 13.4%, Banco De Chile 11.4%, LATAM Airlines Group 10.8%, Falabella 5.2%, Parque Arauco 5.1%
-EEM: Taiwan Semiconductor Manu 13.4%, Samsung Electronics Lt 6.1%, Tencent Holdings 3.6%, SK Hynix 3.4%, Alibaba Group Holding 2.7%
-EEMA: Taiwan Semiconductor Manu 15.0%, Samsung Electronics Lt 5.1%, SK Hynix 4.3%, Alibaba Group Holding 3.3%, Tencent Holdings 3.0%
-EFNL: Nordea Bank Abp 18.8%, Nokia Oyj 12.2%, Sampo Oyj 7.6%, KONE Oyj Class B 6.6%, Metso 4.7%
-EIDO: PT Bank Central Asia Tbk 15.5%, PT Bank Rakyat Indonesia 10.3%, PT Bank Mandiri (Persero) 7.5%, PT Telkom Indonesia (Pers 6.6%, PT Astra International Tb 4.4%
-EIRL: Ryanair Holdings 18.3%, AIB Group 12.0%, Bank of Ireland Group 11.2%, Icon 5.0%, Kingspan Group 4.7%
-EIS: Teva Pharmaceutical Indus 9.8%, Bank Leumi Le-Israel BM 9.0%, Bank Hapoalim BM 7.9%, Elbit Systems 5.4%, Israel Discount Bank 3.7%
-ENOR: DNB Bank ASA 12.6%, Equinor ASA 10.8%, Kongsberg Gruppen ASA 8.0%, Norsk Hydro ASA 5.7%, Mowi ASA 5.0%
-ENZL: Fisher & Paykel Healthcar 22.6%, Auckland International Ai 14.5%, Infratil 9.8%, Contact Energy 4.5%, Mercury NZ 4.3%
-EPHE: Internationalntainer T 20.5%, BDO Unibank 8.8%, SM Prime Holdings 5.4%, Manila Electric 4.6%, Metropolitan Bank & Trust 4.5%
-EPOL: PKO Bank Polski 15.0%, Orlen 12.4%, Bank Polska Kasa Opieki S 7.8%, Powszechny Zaklad Ubezpie 7.6%, KGHM Polska Miedz 4.7%
-EPU: Southernpper 24.2%, Credicorp 21.6%, Compania De Minas Buenave 5.0%, Hochschild Mining 4.8%, Pan American Silver 3.4%
-ESPO: Tencent Holdings 7.7%, Nintendo 6.9%, NetEase 6.7%, Electronic Arts 6.7%, GameStop 5.5%
-EUSA: Keysight Technologies 0.2%, Dell Technologies Ord 0.2%, Block 0.2%, Omnicom Group 0.2%, Axon Enterprise 0.2%
-EWA: BHP Group 14.1%, Commonwealth Bank of Aust 13.9%, National Australia Bank L 7.1%, Westpac Banking 6.9%, ANZ Group Holdings 5.7%
-EWC: Royal Bank of Canada 7.7%, The Toronto-Dominion Bank 5.4%, Shopify Registered Sh 4.9%, Agnico Eagle Mines 4.2%, Enbridge 3.8%
-EWD: Spotify Technology 9.2%, Investor AB Class B 8.7%, Volvo AB Class B 7.1%, Atlaspco AB 6.6%, Sandvik AB 5.4%
-EWG: Siemens AG 10.7%, SAP SE 10.2%, Allianz SE 8.3%, Siemens Energy AG Ordinar 7.4%, Deutsche Telekom AG 7.2%
-EWH: AIA Group 23.0%, Hong Kong Exchanges and C 14.7%, CK Hutchison Holdings 5.2%, Sun Hung Kai Properties L 4.7%, Techtronic Industries 4.5%
-EWI: UniCredit SpA 16.4%, Enel SpA 13.3%, Intesa Sanpaolo 13.1%, Eni SpA 4.7%, Prysmian SpA 4.5%
-EWJ: Toyota Motor 4.4%, Mitsubishi UFJ Financial 4.1%, Hitachi 2.9%, Sony Group 2.7%, Sumitomo Mitsui Financial 2.7%
-EWK: Anheuser-Busch InBev/N 22.3%, argenx SE 12.8%, UCB 9.0%, KBC Groupe NV 4.5%, Ageas/ NV 4.0%
-EWL: Roche Holding AG 15.1%, Novartis AG Registered Sh 14.5%, Nestle 12.6%, Zurich Insurance Group AG 4.5%, ABB 4.5%
-EWM: Malayan Banking Bhd 14.0%, Public Bank Bhd 13.9%, CIMB Group Holdings Bhd 12.6%, Tenaga Nasional Bhd 7.3%, Press Metal Aluminium Hol 4.5%
-EWN: ASML Holding NV 22.7%, ING Groep NV 8.1%, Prosus NV Ordinary Shares 6.3%, Koninklijke Ahold Delhaiz 4.2%, ASM International NV 3.9%
-EWO: Erste Group Bank AG. 21.5%, Bawag Group AG Ordinary S 12.3%, OMV AG 9.9%, voestalpine AG 4.9%, Verbund AG 4.6%
-EWP: Banco Santander 18.2%, Iberdrola 14.2%, Banco Bilbao Vizcaya Arge 12.0%, Ferrovial SE 4.5%, CaixaBank 4.5%
-EWQ: Schneider Electric SE 7.7%, Lvmh Moet Hennessy Louis 6.9%, TotalEnergies SE 6.8%, Safran 6.2%, Airbus SE 5.6%
-EWS: DBS Group Holdings 22.1%, Oversea-Chinese Banking C 18.8%, Yangzijiang Shipbuilding 5.5%, Singapore Telecommunicati 4.6%, Singapore Airlines 4.5%
-EWT: Taiwan Semiconductor Manu 22.1%, Hon Hai Precision Industr 4.6%, MediaTek 4.6%, Delta Electronics 4.5%, ASE Technology Holding 2.5%
-EWU: AstraZeneca 9.7%, HSBC Holdings 9.6%, Shell 7.0%, Unilever 4.8%, Rolls-Royce Holdings 4.5%
-EWW: Grupo MexicoB de CV Cl 14.2%, Grupo Financiero Banorte 10.2%, America MovilB de CV O 8.0%, Fomento Economico Mexican 6.5%, Wal - Mart de MexicoB 5.6%
-EWY: Samsung Electronics Lt 23.4%, SK Hynix 19.8%, Hyundai Motor 3.2%, SK Square 2.3%, KB Financial Group 2.1%
-EWZ: Vale 11.2%, Nu Holdings Ordinary 9.2%, Itau Unibanco Holding 9.0%, Petroleo Brasileiro Pe 6.2%, Petroleo Brasileiro Pe 5.6%
-EZA: Anglogold Ashanti 13.4%, Gold Fields 11.0%, Naspers Class N 9.2%, Firstrand 6.5%, Valterra Platinum 5.4%
-FFTY: Orla Mining 4.1%, Coeur Mining 3.9%, Iamgold 3.7%, Comfort Systems USA 3.5%, Vertiv Holdings Class 3.4%
-GREK: National Bank of Greece S 14.5%, Eurobank 11.7%, Piraeus Bank 10.3%, Alpha Bank 9.2%, Public Power 4.7%
-IAI: The Goldman Sachs Group I 17.6%, Morgan Stanley 13.8%, Charles Schwab 10.9%, CME Group 5.7%, Intercontinental Exchange 4.9%
-IAK: Progressive 13.7%, Chubb 13.6%, The Travelersmpanies I 7.5%, Allstate 6.1%, Aflac 5.6%
-IAT: U.S. Bancorp 14.2%, PNC Financial Services Gr 13.9%, Truist Financial 10.6%, Fifth Third Bancorp 6.3%, M&T Bank 5.5%
-IBB: Gilead Sciences 9.4%, Vertex Pharmaceuticals In 9.1%, Amgen 8.9%, Regeneron Pharmaceuticals 6.7%, Alnylam Pharmaceuticals I 3.7%
-ICLN: Bloom Energy 10.7%, Nextpower 8.8%, First Solar 6.1%, Iberdrola 5.9%, China Yangtze Power Lt 4.5%
-IDU: NextEra Energy 11.5%, Southern 6.3%, Constellation Energy 6.1%, Duke Energy 6.0%, Waste Management 5.2%
-IEO: ConocoPhillips 19.5%, EOG Resources 9.4%, Phillips 66 8.6%, Marathon Petroleum 6.7%, Texas Pacific Land 5.2%
-IEZ: Baker Hughes 23.2%, SLB 21.9%, TechnipFMC 4.9%, Halliburton 4.2%, Weatherford International 4.1%
-IGE: Exxon Mobil 10.2%, Chevron 9.0%, Newmont 3.6%, ConocoPhillips 3.6%, Agnico Eagle Mines 3.2%
-IGV: Microsoft 9.4%, Palantir Technologies 8.3%, Salesforce 7.6%, Oracle 7.4%, Palo Alto Networks 5.0%
-IHE: Johnson & Johnson 24.5%, Eli Lilly and 21.5%, Merck & 5.2%, Bristol-Myers Squibb 5.0%, Zoetis 4.5%
-IHF: UnitedHealth Group 20.9%, CVS Health 13.2%, Elevance Health 9.3%, HCA Healthcare 5.3%, The Cigna Group 5.2%
-IHI: Abbott Laboratories 17.0%, Intuitive Surgical 15.0%, Boston Scientific 9.6%, Stryker 5.1%, Edwards Lifesciences 4.8%
-ILCB: NVIDIA 6.9%, Apple 6.5%, Microsoft 4.9%, Amazon.com 3.4%, Alphabet 3.0%
-ILCG: NVIDIA 14.6%, Apple 6.9%, Broadcom 5.2%, Meta Platforms Class 4.9%, Amazon.com 4.9%
-ILCV: Apple 6.2%, Microsoft 5.0%, Berkshire Hathaway Cl 3.0%, JPMorgan Chase & 2.6%, Amazon.com 2.1%
-ILF: Vale 9.2%, Nu Holdings Ordinary 8.5%, Itau Unibanco Holding 7.4%, Grupo MexicoB de CV Cl 5.9%, Petroleo Brasileiro Pe 4.6%
-IMCB: Newmont 1.0%, Corning 0.8%, Howmet Aerospace 0.7%, Freeport-McMoRan 0.7%, Western Digital 0.7%
-IMCG: Corning 1.7%, Howmet Aerospace 1.5%, Vertiv Holdings Class 1.4%, Johnsonntrols Internat 1.3%, Seagate Technology Holdin 1.3%
-IMCV: Newmont 1.9%, Williamsmpanies 1.2%, United Parcel Service 1.2%, FedEx 1.2%, U.S. Bancorp 1.2%
-INDA: HDFC Bank 7.3%, Reliance Industries 6.2%, ICICI Bank 5.3%, Bharti Airtel 3.5%, Infosys 3.1%
-ISCB: Lumentum Holdings 0.8%, ATI 0.4%, Albemarle 0.4%, Exact Sciences 0.3%, Moderna 0.3%
-ISCG: Lumentum Holdings 1.7%, ATI 0.8%, RBC Bearings 0.6%, ITT 0.6%, Lincoln Electric Holdings 0.6%
-ISCV: Moderna 0.6%, Viatris 0.6%, Alcoa 0.5%, Annaly Capital Management 0.5%, CF Industries Holdings In 0.5%
-ITA: GE Aerospace 21.0%, RTX 15.8%, Boeing 7.5%, Lockheed Martin 5.3%, Howmet Aerospace 5.1%
-ITB: D.R. Horton 14.6%, PulteGroup 8.9%, Lennar 8.2%, NVR 7.1%, Toll Brothers 4.8%
-IVV: NVIDIA 7.3%, Apple 6.6%, Microsoft 5.0%, Amazon.com 3.5%, Alphabet 3.1%
-IWC: Praxis Precision Medicine 1.7%, Applied Digital 1.3%, Cogent Biosciences 1.1%, Applied Optoelectronics I 1.0%, Cipher Digital 1.0%
-IYE: Exxon Mobil 23.7%, Chevron 16.2%, ConocoPhillips 6.4%, Williamsmpanies 4.6%, SLB 3.8%
-IYF: Berkshire Hathaway Cl 12.4%, JPMorgan Chase & 11.0%, Bank of America 4.3%, The Goldman Sachs Group I 3.9%, Wells Fargo & 3.8%
-IYG: Berkshire Hathaway Cl 14.0%, JPMorgan Chase & 12.4%, Visa 8.2%, Mastercard 6.4%, Bank of America 5.1%
-IYH: Eli Lilly and 14.1%, Johnson & Johnson 10.0%, AbbVie 6.9%, Merck & 5.2%, UnitedHealth Group 4.5%
-IYJ: Visa 6.7%, Mastercard 5.2%, GE Aerospace 4.4%, Caterpillar 4.3%, RTX 3.4%
-IYM: Linde 19.9%, Newmont 12.1%, Freeport-McMoRan 8.4%, Ecolab 6.6%, Anglogold Ashanti 4.7%
-IYT: Union Pacific 16.2%, Uber Technologies 16.2%, United Parcel Service 8.9%, FedEx 5.7%, Old Dominion Freight Line 5.1%
-IYW: NVIDIA 16.9%, Apple 15.7%, Microsoft 11.9%, Meta Platforms Class 3.6%, Micron Technology 3.3%
-IYZ: Cisco Systems 18.7%, Verizonmmunications In 13.1%, AT&T 12.0%, Lumentum Holdings 5.7%, Ciena 4.7%
-MCHI: Tencent Holdings 15.0%, Alibaba Group Holding 11.1%, Chinanstruction Bank C 3.5%, Xiaomi Class B 2.7%, PDD Holdings 2.6%
-MTUM: Micron Technology 4.9%, Broadcom 4.6%, NVIDIA 4.6%, Johnson & Johnson 4.5%, Exxon Mobil 3.8%
-QQQ: NVIDIA 8.4%, Apple 7.6%, Microsoft 5.7%, Amazon.com 4.4%, Tesla 3.9%
-QQQJ: SanDisk Ordinary Sha 4.6%, Teradyne 2.5%, Lumentum Holdings 2.5%, eBay 2.0%, Kimberly-Clark 1.8%
-REM: Annaly Capital Management 22.9%, AGNC Investment 15.3%, Starwood Property Trust I 7.9%, Dynex Capital 4.4%, Blackstone Mortgage Trust 4.4%
-RSPD: Tapestry 2.7%, Norwegian Cruise Line Hol 2.6%, Hasbro 2.4%, Garmin 2.4%, Carnival 2.4%
-RSPS: Bunge Global 3.3%, The Hershey 3.2%, Colgate-Palmolive 3.1%, Church & Dwight 3.1%, Philip Morris Internation 3.1%
-SNSR: STMicroelectronics NV 6.5%, Garmin 5.7%, Lattice Semiconductorr 5.4%, DexCom 4.6%, Rambus 4.4%
-SOXX: Micron Technology 8.6%, Applied Materials 7.3%, NVIDIA 6.7%, Advanced Micro Devices In 6.2%, Broadcom 5.3%
-SPLV: Southern 1.3%, CenterPoint Energy 1.3%, WEC Energy Group 1.3%, Ameren 1.3%, Evergy 1.3%
-TAN: Nextpower 10.5%, Enlight Renewable Energy 7.4%, Enphase Energy 7.0%, First Solar 6.7%, GCL Technology Holdings L 5.6%
-THD: Delta Electronics (Thaila 16.1%, Advanced Info Service PCL 7.9%, Ptt PCL Units Non-Voting 6.8%, CP All PCL Units Non-voti 5.3%, Bangkok Dusit Medical Ser 4.3%
-TUR: Aselsan Elektronik Sanayi 10.5%, Bim Birlesik Magazalar AS 7.2%, Akbank TAS 6.7%, Tupras-Turkiye Petrol Raf 5.0%, Turk Hava Yollari AO 3.7%
-URTH: NVIDIA 5.0%, Apple 4.5%, Microsoft 3.2%, Amazon.com 2.4%, Alphabet 2.1%
-VEGI: Deere & 23.7%, Corteva 9.5%, Nutrien 6.4%, Archer-Daniels-Midland 5.8%, Kubota 3.5%
-"""
 
 # ── ETF Universe ───────────────────────────────────────────────────────────────
 ETF_UNIVERSE = [
@@ -263,10 +166,6 @@ EXTRA_TICKERS = ['HYG','IEI','ISCB','ILCB','IMCG','IMCV','RSPD','RSPS','IDU','GL
 HISTORY_PROXY = {'ISCB': 'IJR', 'ILCB': 'IVV'}
 MIN_HISTORY   = TREND_MA + 20
 
-# Modelo del análisis AI. 2026-10-13: claude-sonnet-4-20250514 ya no existe y
-# la API devolvía HTTP 400 (la sección AI quedaba vacía en cada corrida).
-AI_MODEL       = "claude-sonnet-5-5"
-AI_MODEL_LABEL = "claude-sonnet-5.5"
 
 # ── Data fetching ──────────────────────────────────────────────────────────────
 def _us_session_in_progress() -> bool:
@@ -1033,255 +932,9 @@ def fetch_etf_info(tickers: list[str]) -> dict:
     return {t: cache[t] for t in tickers if t in cache}
 
 # ── HTML ───────────────────────────────────────────────────────────────────────
-# ── Claude AI Analysis ────────────────────────────────────────────────────────
-
-def _ai_cache_load() -> dict:
-    p = Path(AI_CACHE_FILE)
-    if not p.exists():
-        return {}
-    try:
-        return json.loads(p.read_text())
-    except Exception:
-        return {}
-
-def _ai_cache_save(cache: dict):
-    try:
-        Path(AI_CACHE_FILE).write_text(json.dumps(cache))
-    except Exception as e:
-        log.warning("Could not write AI cache: %s", e)
-
-def call_claude_analysis(ranked, matrix, trend_score_val, trend_history,
-                          regime, regime_days, date_str):
-    """Call Claude API with full ETF data for deep analysis."""
-    import urllib.request, urllib.error, json as _json
-
-    api_key = ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        log.warning("No ANTHROPIC_API_KEY found in env or .env — skipping AI analysis.")
-        return ""
-
-    log.info("Calling Claude API for AI analysis...")
-
-    # Duración promedio real de los regímenes completos (antes era un 43 fijo
-    # que ya no describía la historia: hoy el promedio ronda las 80 sesiones).
-    regime_avg_days = 43
-    try:
-        runs, cur, n = [], None, 0
-        for e in load_regime_history():
-            if e.get("regime") == cur:
-                n += 1
-            else:
-                if cur is not None:
-                    runs.append(n)
-                cur, n = e.get("regime"), 1
-        completed = runs[1:]                      # sin el primer run (artefacto del arranque)
-        if completed:
-            regime_avg_days = round(sum(completed) / len(completed))
-    except Exception as e:
-        log.warning("Could not compute the average regime length (%s); using %d.", e, regime_avg_days)
-
-    etf_rows = [{
-        "ticker":              r["ticker"],
-        "name":                r["name"],
-        "category":            r["category"],
-        "rank":                r["rank_today"],
-        "rank_30d_ago":        r["rank_30ago"],
-        "rank_climb_30d":      r["rank_climb"],
-        "exp_regression_score": round(r["cx"], 3),
-        "annual_pct":          r["yearly"],
-        "perf_3m_pct":         r["perf_3m"],
-        "perf_1m_pct":         r["perf_1m"],
-        "vs_ema20_pct":        r.get("vs_ema20", 0),
-        "vs_sma50_pct":        r.get("vs_sma50", 0),
-        "net_accum_50d":       r["net_50"],
-        "net_accum_20d":       r["net_20"],
-        "net_accum_5d":        r["net_5"],
-    } for r in ranked]
-
-    payload = {
-        "date": date_str, "regime": regime, "regime_days": regime_days,
-        "regime_avg_days": regime_avg_days,
-        "trend_score_pct": int(trend_score_val * 100),
-        "trend_threshold_pct": 70,
-        "trend_history_20d": [int(round(h["s"] * 100)) for h in trend_history[-20:]],
-        "matrix_score": sum(m["f"] for m in matrix),
-        "matrix_bullish": sum(1 for m in matrix if m["f"] > 0),
-        "matrix_neutral": sum(1 for m in matrix if m["f"] == 0),
-        "matrix_bearish": sum(1 for m in matrix if m["f"] < 0),
-        "matrix_indicators": [{"name": m["n"], "signal": m["sig"], "flag": m["f"]} for m in matrix],
-        "etfs": etf_rows,
-    }
-
-    system_prompt = """You are the chief quantitative analyst at a family office. Your analysis will be read by the portfolio manager to make allocation decisions this week. Be direct, opinionated, and accionable — not descriptive.
-
-You receive full data for 120 ETFs across 5 categories: Country/Region, Industry/Sector, Style, Fixed Income, Commodity/REIT.
-
-Each ETF has these fields:
-- rank: current ranking 1-120 (1 = strongest momentum)
-- rank_climb_30d: positions gained over last 30 days (positive = rising fast)
-- exp_regression_score: annualised exponential regression score. Call this "momentum score" — never "cx".
-- annual_pct, perf_3m_pct, perf_1m_pct: total return percentages
-- vs_ema20_pct: % distance from 20-day EMA (positive = price above EMA20, momentum intact)
-- vs_sma50_pct: % distance from 50-day SMA (positive = above SMA50, trend intact)
-- net_accum_50d / 20d / 5d: net institutional accumulation days (positive = buying pressure)
-
-The model tracks:
-- Trend Score (0-100%): 9 macro sub-scores. Threshold 70% = Stocks regime.
-- Regime (Bonds/Stocks): hysteresis — Bonds→Stocks needs 20 consecutive days ≥70%, Stocks→Bonds needs 20 consecutive days <70%. The average completed regime lasts `regime_avg_days` trading days (computed from the model's own history and given in the payload).
-- Matrix: 17 ETF-pair ratios vs MA100 ±1.5% band — Bullish/Neutral/Bearish.
-
-TEMPORAL CONTEXT: If the regime has lasted N days and the average is regime_avg_days, the regime is N/regime_avg_days = X% through its average cycle. Use this to frame how late or early we are in the current regime.
-
-ANOMALY DETECTION: Actively look for patterns that are NOT obvious. Examples of anomalies worth flagging:
-- An ETF with strong accumulation on all 3 horizons (50d/20d/5d) despite a bearish regime
-- A country ETF outperforming its region significantly
-- A sector rotating in the opposite direction of its Matrix signal
-- ETFs with large rank_climb_30d but deteriorating recent performance (momentum stalling)
-- Fixed Income ETFs diverging from each other (short vs long duration)
-If you find anomalies, call them out explicitly.
-
-When mentioning ETFs, reference top holdings where relevant to explain the WHY. Example: "IEZ (Baker Hughes 23%, SLB 22%) is benefiting from..." Use holdings only when they add genuine insight.
-
-TOP HOLDINGS REFERENCE (equity ETFs only):
-{ETF_HOLDINGS_CONTEXT}
-
-In Top Opportunities, rank ETFs from highest to lowest conviction and explain why each has higher or lower conviction than the next.
-
-Write exactly 5 sections. Dense analytical prose, no bullet points, cite exact tickers and numbers throughout.
-
-## REGIME & TREND
-## TOP OPPORTUNITIES
-## RISK SIGNALS
-## CROSS-CATEGORY PATTERNS
-## CONCLUSION"""
-
-    system_prompt = system_prompt.format(ETF_HOLDINGS_CONTEXT=ETF_HOLDINGS_CONTEXT)
-
-    user_content = _json.dumps(payload)
-    cache_key = hashlib.sha256(
-        (system_prompt + "|" + user_content).encode("utf-8")
-    ).hexdigest()
-    cache = _ai_cache_load()
-    if cache_key in cache:
-        log.info("AI analysis cache hit — reusing previous result (no API cost).")
-        return cache[cache_key]
-
-    # Sonnet 5.5 piensa siempre (adaptive) y el thinking consume max_tokens:
-    # con 2000 la prosa de 5 secciones salía truncada o vacía. effort medium
-    # acota el thinking; 8000 deja lugar de sobra para el texto.
-    body = _json.dumps({
-        "model": AI_MODEL,
-        "max_tokens": 8000,
-        "output_config": {"effort": "medium"},
-        "system": system_prompt,
-        "messages": [{"role": "user", "content": user_content}],
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages", data=body,
-        headers={"x-api-key": api_key, "anthropic-version": "2023-06-01",
-                 "content-type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=180) as resp:
-            result = _json.loads(resp.read().decode("utf-8"))
-            stop = result.get("stop_reason")
-            if stop == "refusal":
-                log.error("Claude API refused the request (stop_details=%s).", result.get("stop_details"))
-                return ""
-            # El primer bloque puede ser `thinking` (Sonnet 5.5): tomar el de texto.
-            text = next((b.get("text", "") for b in result.get("content", []) if b.get("type") == "text"), "")
-            if not text:
-                log.error("Claude API returned no text block (stop_reason=%s).", stop)
-                return ""
-            if stop == "max_tokens":
-                log.warning("Claude API hit max_tokens — the analysis may be truncated.")
-            usage = result["usage"]
-            cost = (usage["input_tokens"] / 1e6 * 2) + (usage["output_tokens"] / 1e6 * 10)   # Sonnet 5.5
-            log.info("Analysis done — %s in / %s out tokens · $%.4f",
-                     usage["input_tokens"], usage["output_tokens"], cost)
-            cache[cache_key] = text
-            # Keep cache bounded to last 30 entries
-            if len(cache) > 30:
-                cache = dict(list(cache.items())[-30:])
-            _ai_cache_save(cache)
-            return text
-    except urllib.error.HTTPError as e:
-        try:
-            detail = e.read().decode("utf-8", "replace")[:400]
-        except Exception:
-            detail = ""
-        log.error("Claude API error: %s — %s", e, detail)
-        return ""
-    except Exception as e:
-        log.error("Claude API error: %s", e)
-        return ""
-
-
-def format_ai_html(analysis_text, date_str):
-    """Convert Claude's 4-section analysis into styled HTML."""
-    import re
-
-    sections_meta = {
-        "REGIME & TREND":           "Regime & Trend",
-        "TOP OPPORTUNITIES":        "Top Opportunities",
-        "RISK SIGNALS":             "Risk Signals",
-        "CROSS-CATEGORY PATTERNS":  "Cross-Category Patterns",
-        "CONCLUSION":               "Conclusion",
-    }
-
-    parts = re.split(r'##\s+', analysis_text.strip())
-    parsed = {}
-    for part in parts:
-        if not part.strip(): continue
-        lines = part.strip().split('\n', 1)
-        header = lines[0].strip().upper()
-        body = lines[1].strip() if len(lines) > 1 else ""
-        for key in sections_meta:
-            if key in header:
-                parsed[key] = body
-                break
-
-    def style_text(text):
-        text = re.sub(r'\b([A-Z]{2,5})\b(?!\w)', r'<strong>\1</strong>', text)
-        text = re.sub(r'([+-]?\d+\.?\d*%)', r'<em>\1</em>', text)
-        text = text.replace('\n\n', '</p><p class="ai-text" style="margin-top:10px">')
-        return text
-
-    def render_block(key):
-        if key not in parsed: return ""
-        label = sections_meta[key]
-        body  = style_text(parsed[key])
-        return f'<div class="ai-block"><div class="ai-block-title">{label}</div><p class="ai-text">{body}</p></div>'
-
-    col1 = render_block("REGIME & TREND") + render_block("TOP OPPORTUNITIES")
-    col2 = render_block("RISK SIGNALS")   + render_block("CROSS-CATEGORY PATTERNS")
-    conclusion = render_block("CONCLUSION")
-
-    # Conclusion spans full width with a distinct style
-    conclusion_html = ""
-    if "CONCLUSION" in parsed:
-        body = style_text(parsed["CONCLUSION"])
-        conclusion_html = f'''<div class="ai-conclusion">
-          <div class="ai-block-title">Conclusion</div>
-          <p class="ai-text">{body}</p>
-        </div>'''
-
-    return f'''<div class="ai-header">
-      <div class="ai-badge">Claude Analysis</div>
-      <div class="ai-model">Generated {date_str} · {AI_MODEL_LABEL} · Full 120-ETF dataset</div>
-    </div>
-    <div class="ai-body">
-      <div class="ai-col">{col1}</div>
-      <div class="ai-col">{col2}</div>
-    </div>
-    {conclusion_html}'''
-
-
 # ── HTML generation ────────────────────────────────────────────────────────────
 def generate_html(results, matrix, trend_score_val, trend_history,
-                  regime, regime_days, date_str, ai_analysis="", data_date=None,
+                  regime, regime_days, date_str, data_date=None,
                   etf_info=None, macro_html="") -> str:
     etf_info = etf_info or {}
     if data_date is None:
@@ -1289,12 +942,6 @@ def generate_html(results, matrix, trend_score_val, trend_history,
 
     ranked = add_ranks(results)
     total  = len(ranked)
-
-    # Format AI analysis into HTML blocks
-    if ai_analysis:
-        ai_analysis_html = format_ai_html(ai_analysis, date_str)
-    else:
-        ai_analysis_html = '<div class="ai-loading">AI analysis not available — set ANTHROPIC_API_KEY to enable.</div>'
 
     # Macro Insights (macro_insights.py): sección propia arriba del card AI,
     # con su CSS; si no hay nota del día no se muestra nada.
@@ -1653,7 +1300,7 @@ table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,
 .filter-clear:hover{{border-color:var(--red);color:var(--red)}}
 .filter-count{{font-size:10px;color:var(--mist);letter-spacing:1px;padding-left:6px}}
 @media(max-width:900px){{.filter-bar{{gap:8px;padding:10px}}.filter-input{{width:100px}}.filter-clear{{margin-left:0}}}}
-/* ── AI Analysis ── */
+/* ── Macro Insights (card; las clases .ai-* las usa macro_insights.html_fragment) ── */
 .ai-section{{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:32px 36px;margin-top:0}}
 .ai-header{{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--rule)}}
 .ai-badge{{background:var(--teal2);border:1px solid rgba(0,229,204,.3);border-radius:4px;padding:4px 10px;font-size:10px;letter-spacing:2px;color:var(--teal);font-weight:700;text-transform:uppercase}}
@@ -1667,10 +1314,6 @@ table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,
 .ai-text{{font-size:14px;font-family:"IBM Plex Sans",sans-serif;color:var(--smoke);line-height:2.0;letter-spacing:.1px}}
 .ai-text strong{{color:var(--white);font-weight:700}}
 .ai-text em{{color:var(--teal);font-style:normal}}
-.ai-loading{{text-align:center;padding:40px;color:var(--mist);font-size:11px;letter-spacing:1px}}
-.ai-conclusion{{margin-top:20px;padding-top:20px;border-top:1px solid var(--rule)}}
-.ai-conclusion .ai-block-title{{color:var(--teal)}}
-.ai-conclusion .ai-text{{font-size:14px;font-family:"IBM Plex Sans",sans-serif;color:var(--white);line-height:2.0;letter-spacing:.1px}}
 .pos{{color:var(--teal)}}.neg{{color:var(--red)}}
 @media(max-width:1100px){{.hero-row{{grid-template-columns:1fr 1fr}}.content-row{{grid-template-columns:1fr}}.springs-grid{{grid-template-columns:repeat(2,1fr)}}.ai-body{{grid-template-columns:1fr;gap:24px}}.etf-section{{overflow-x:auto;-webkit-overflow-scrolling:touch}}.etf-section table.etf{{min-width:1400px}}}}
 @media(max-width:768px){{.wrap{{padding:18px}}.stat-box{{grid-template-columns:1fr}}}}
@@ -1804,11 +1447,7 @@ table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,
     <div class="cat-tabs" id="catTabs"></div>
     <div id="catPanels"></div>
   </div>
-  {macro_section}<div class="sec-head" style="margin-top:28px"><div class="sec-label">AI Analysis · Claude</div><div class="sec-line"></div></div>
-  <div class="ai-section">
-    {ai_analysis_html}
-  </div>
-</div>
+  {macro_section}</div>
 <div id="compModal" class="comp-modal" onclick="if(event.target===this)hideComp()">
   <div class="comp-card">
     <div class="comp-head"><div class="comp-head-l"><span id="compTitle" class="comp-title"></span><span id="compIsin" class="comp-isin"></span></div><button class="comp-close" onclick="hideComp()" aria-label="Close">&times;</button></div>
@@ -2198,16 +1837,11 @@ def _parse_args():
     import argparse
     ap = argparse.ArgumentParser(
         description="Generate the Macro ETF Monitor dashboard.")
-    g = ap.add_mutually_exclusive_group()
-    g.add_argument("--ai", dest="ai", action="store_true", default=None,
-                   help="run the Claude AI analysis (no interactive prompt)")
-    g.add_argument("--no-ai", dest="ai", action="store_false",
-                   help="skip the Claude AI analysis (no interactive prompt)")
     m = ap.add_mutually_exclusive_group()
     m.add_argument("--macro", dest="macro", action="store_true", default=None,
-                   help="run the Macro Insights note (macro_insights.py); default: same as the AI analysis")
+                   help="run the Macro Insights note (macro_insights.py) without prompting")
     m.add_argument("--no-macro", dest="macro", action="store_false",
-                   help="skip the Macro Insights note")
+                   help="skip the Macro Insights note without prompting")
     ap.add_argument("--no-push", action="store_true",
                     help="do not copy index.html nor commit/push to GitHub Pages")
     return ap.parse_args()
@@ -2217,17 +1851,17 @@ if __name__ == "__main__":
     date_str = datetime.now().strftime("%b %d, %Y")
     print(f"Macro ETF Dashboard Generator — {date_str}")
 
-    # AI analysis: explicit flag wins; otherwise ask interactively (double-click
-    # launcher UX). Non-interactive runs (cron/launchd) default to no AI.
-    if args.ai is not None:
-        run_ai = args.ai
+    # Macro Insights: explicit flag wins; otherwise ask interactively (double-click
+    # launcher UX). Non-interactive runs (cron/launchd) default to no note.
+    if args.macro is not None:
+        run_macro = args.macro
     elif sys.stdin.isatty():
         print("")
-        resp = input("¿Ejecutar análisis AI? (s/n) [~$0.06]: ").strip().lower()
-        run_ai = resp == "s"
+        resp = input("¿Generar la nota macro con Claude? (s/n) [~$0.30 diaria · ~$1.50 semanal]: ").strip().lower()
+        run_macro = resp == "s"
         print("")
     else:
-        run_ai = False
+        run_macro = False
 
     # Download everything
     all_data = download_all()
@@ -2319,19 +1953,9 @@ if __name__ == "__main__":
     print("\nFetching ETF info (AUM / volume / P/E / composition)...")
     etf_info = fetch_etf_info([t for t, _, _ in ETFS])
 
-    # AI Analysis
-    if run_ai:
-        print("\nRunning AI analysis...")
-        ai_analysis = call_claude_analysis(ranked, matrix, trend_score_val,
-                                            trend_history, regime, regime_days, date_str)
-    else:
-        print("\nAI analysis skipped.")
-        ai_analysis = ""
-
     # Macro Insights (macro_insights.py): nota macro del día sobre el snapshot
     # recién guardado. Reusa insights/<sesión>.json si ya existe; nunca
     # interrumpe la generación del dashboard.
-    run_macro = args.macro if args.macro is not None else run_ai
     macro_html = ""
     if run_macro:
         print("\nRunning macro insights...")
@@ -2354,7 +1978,7 @@ if __name__ == "__main__":
 
     # Generate HTML
     html = generate_html(ranked, matrix, trend_score_val, trend_history,
-                         regime, regime_days, date_str, ai_analysis, data_date,
+                         regime, regime_days, date_str, data_date=data_date,
                          etf_info=etf_info, macro_html=macro_html)
     Path(OUTPUT_FILE).write_text(html, encoding="utf-8")
     print(f"\n✓ Dashboard saved → {OUTPUT_FILE}")

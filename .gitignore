@@ -22,7 +22,6 @@ env/
 .vscode/
 
 # Local caches
-.ai_analysis_cache.json
 .etf_info_cache.json
 .backtest_prices.pkl
 

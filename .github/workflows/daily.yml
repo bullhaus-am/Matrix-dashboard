@@ -47,16 +47,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Caches locales del script (gitignored): etf_info evita re-fetch de
-      # metadata de ~120 ETFs; ai_analysis evita re-pagar el análisis si se
-      # re-corre el mismo día con la misma data.
+      # Cache local del script (gitignored): etf_info evita re-fetch de
+      # metadata de ~120 ETFs. (La nota macro se reusa desde insights/, que
+      # está commiteado, así que no necesita cache.)
       - name: Restaurar caches
         if: steps.guard.outputs.go == '1'
         uses: actions/cache@v4
         with:
           path: |
             .etf_info_cache.json
-            .ai_analysis_cache.json
           key: matrix-caches-${{ github.run_id }}
           restore-keys: matrix-caches-
 
@@ -71,4 +70,4 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          python generate_dashboard.py --ai --macro
+          python generate_dashboard.py --macro

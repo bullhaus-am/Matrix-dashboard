@@ -50,7 +50,7 @@ echo ""
 # Warn if no API key configured
 if [ -z "${ANTHROPIC_API_KEY:-}" ] && [ ! -f .env ]; then
     echo "NOTE: ANTHROPIC_API_KEY not set and no .env file found."
-    echo "      AI analysis will be skipped if you answer 's'."
+    echo "      The Macro Insights note will be skipped if you answer 's'."
     echo ""
 fi
 

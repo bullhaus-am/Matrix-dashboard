@@ -20,16 +20,16 @@ python3 generate_dashboard.py
 # or double-click "Run Dashboard.command" on macOS
 ```
 
-Run without flags in a terminal and the script asks `¿Ejecutar análisis AI? (s/n)`.
+Run without flags in a terminal and the script asks `¿Generar la nota macro con Claude? (s/n)`.
 For unattended runs (cron / launchd) use the CLI flags:
 
-| Flag        | Effect                                                        |
-|-------------|---------------------------------------------------------------|
-| `--ai`      | Run the Claude analysis without prompting                     |
-| `--no-ai`   | Skip the Claude analysis without prompting                    |
-| `--no-push` | Skip the `index.html` copy and the git commit/push            |
+| Flag         | Effect                                                        |
+|--------------|---------------------------------------------------------------|
+| `--macro`    | Generate the Macro Insights note without prompting            |
+| `--no-macro` | Skip the Macro Insights note without prompting                |
+| `--no-push`  | Skip the `index.html` copy and the git commit/push            |
 
-With no flag and no interactive terminal (e.g. cron), the AI analysis is skipped.
+With no flag and no interactive terminal (e.g. cron), the note is skipped.
 
 Data note: if the script runs while the US market is open, today's
 still-forming daily bar is dropped so metrics always use the last *completed*
@@ -56,7 +56,7 @@ Environment overrides:
 
 | Variable                  | Default | Effect                                  |
 |---------------------------|---------|-----------------------------------------|
-| `ANTHROPIC_API_KEY`       | —       | Required for the AI analysis section    |
+| `ANTHROPIC_API_KEY`       | —       | Required for the Macro Insights note    |
 | `DASHBOARD_FETCH_WORKERS` | `8`     | Parallel ticker downloads               |
 | `DASHBOARD_LOG_LEVEL`     | `INFO`  | `DEBUG` / `INFO` / `WARNING` / `ERROR`  |
 
@@ -71,14 +71,13 @@ A `.env` file in this folder is auto-loaded.
 - **ETF table** — per-category ranking by exponential-regression momentum, with
   accumulation/distribution counts (50/20/5 day), ATR, distance from EMA20/SMA50,
   and 1d/1m/3m/annual returns.
-- **AI Analysis** (optional) — Claude reads the full payload and writes a 5-section
-  commentary (Regime & Trend, Top Opportunities, Risk Signals, Cross-Category
-  Patterns, Conclusion). Cached by payload hash in `.ai_analysis_cache.json` so
-  the same dataset never costs you twice.
+- **Macro Insights** (optional) — Claude's daily / weekly inter-market note on
+  the model (see the next section). The older "AI Analysis" card (a 5-section
+  ETF-picking commentary) was removed on 2026-10-22.
 
 ## Macro insights (experimental, `macro_insights.py`)
 
-Separate from the AI Analysis card. Reads the point-in-time dataset already on
+Reads the point-in-time dataset already on
 disk (`snapshots/*.json`, `regime_history.json`, optionally the Liquidity
 Dashboard's `dashboard_data.js`), computes the macro facts deterministically
 (regime flip countdown, Matrix pair streaks / flips / edge proximity, Trend
@@ -106,10 +105,10 @@ Runs on the `anthropic` SDK already installed (0.84 works; `>=2.1` is what
 `requirements.txt` pins for fresh installs) with the same `ANTHROPIC_API_KEY`
 as the dashboard, read from the environment or `.env`. Existing `insights/<session>.json` files generated via the API are
 reused unless `--force`. `generate_dashboard.py --macro` runs it after saving
-the day's snapshot and renders the note as a "Macro Insights · Claude" card
-above the AI Analysis card (the daily workflow passes `--ai --macro`;
+the day's snapshot and renders the note as the "Macro Insights · Claude" card
+at the bottom of the dashboard (the daily workflow passes `--macro`;
 `insights/` is committed with the dashboard so the next note sees the
-previous one). Without a flag it follows the AI analysis choice.
+previous ones).
 `historical_analogs` (`matrix_analogs.py`, skip with `--no-analogs`): the 5 past sessions closest to today's Matrix + Trend state and what followed over 10 / 20 sessions, rebuilt back to 2007 from `.backtest_prices.pkl` (`python3 backtest.py` downloads it) and cached in `.analogs_cache.json` — base rates, not predictions.
 
 ## Performance
@@ -155,7 +154,9 @@ exercised by running the full script.
 | `Run Dashboard.command`         | macOS double-click launcher                        |
 | `regime_history.json`           | Persisted Trend Score / regime history             |
 | `snapshots/YYYY-MM-DD.json`     | Daily point-in-time dataset (trend, matrix, full ETF table) for research/backtesting. One file per market session; committed along with the daily push. |
-| `.ai_analysis_cache.json`       | Local cache of past Claude responses (git-ignored) |
+| `macro_insights.py` / `matrix_analogs.py` | Macro Insights note + historical analogs (see above) |
+| `insights/YYYY-MM-DD.{json,md,html}` | Daily / weekly note per session; committed with the daily push |
+| `.analogs_cache.json`           | Matrix + Trend reconstruction 2007→ for the analogs (tracked, ~1 MB) |
 | `index.html` / `macro_etf_dashboard.html` | Generated output                         |
 | `tests/`                        | Pytest suite for metric functions                  |
 
