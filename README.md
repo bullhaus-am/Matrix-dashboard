@@ -76,6 +76,42 @@ A `.env` file in this folder is auto-loaded.
   Patterns, Conclusion). Cached by payload hash in `.ai_analysis_cache.json` so
   the same dataset never costs you twice.
 
+## Macro insights (experimental, `macro_insights.py`)
+
+Separate from the AI Analysis card. Reads the point-in-time dataset already on
+disk (`snapshots/*.json`, `regime_history.json`, optionally the Liquidity
+Dashboard's `dashboard_data.js`), computes the macro facts deterministically
+(regime flip countdown, Matrix pair streaks / flips / edge proximity, Trend
+component changes, breadth by category, cross-asset spreads) and asks Claude
+for a short inter-market note with a fixed JSON schema. Nothing is downloaded.
+
+```bash
+python3 macro_insights.py                        # last snapshot, profile auto → insights/YYYY-MM-DD.{json,md,html}
+python3 macro_insights.py --profile weekly       # force the long read
+python3 macro_insights.py --session 2026-09-15   # replay a past session (no lookahead)
+python3 macro_insights.py --dry-run              # print profile + prompt + payload + token estimate, no API call
+python3 macro_insights.py --model claude-sonnet-5-5 --effort low   # override the profile's model/effort
+python3 macro_insights.py --web                  # allow up to 5 web searches
+```
+
+Two profiles (`--profile`, default `auto`):
+
+| Profile  | When (auto)      | Model / effort              | Shape                                                                                  | ~Cost  |
+|----------|------------------|-----------------------------|----------------------------------------------------------------------------------------|--------|
+| `daily`  | Mon-Thu sessions | `claude-opus-5-5`, medium   | transition/continuity flag, regime, **breakout light** (color + size + tilts), ≤3 insights, 1 contradiction, 1 trigger, 1 blind spot | $0.15-0.25 |
+| `weekly` | Friday sessions  | `claude-fable-5-1`, high    | 3-6 insights, several triggers and contradictions, changes vs the week's daily notes   | $0.65-1.15 |
+
+The daily note receives the previous note; the weekly receives the last five.
+Runs on the `anthropic` SDK already installed (0.84 works; `>=2.1` is what
+`requirements.txt` pins for fresh installs) with the same `ANTHROPIC_API_KEY`
+as the dashboard, read from the environment or `.env`. Existing `insights/<session>.json` files generated via the API are
+reused unless `--force`. `generate_dashboard.py --macro` runs it after saving
+the day's snapshot and renders the note as a "Macro Insights · Claude" card
+above the AI Analysis card (the daily workflow passes `--ai --macro`;
+`insights/` is committed with the dashboard so the next note sees the
+previous one). Without a flag it follows the AI analysis choice.
+`historical_analogs` (`matrix_analogs.py`, skip with `--no-analogs`): the 5 past sessions closest to today's Matrix + Trend state and what followed over 10 / 20 sessions, rebuilt back to 2007 from `.backtest_prices.pkl` (`python3 backtest.py` downloads it) and cached in `.analogs_cache.json` — base rates, not predictions.
+
 ## Performance
 
 Ticker downloads run in parallel with `ThreadPoolExecutor` (default 8 workers).

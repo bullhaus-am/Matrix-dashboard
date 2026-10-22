@@ -34,3 +34,7 @@ backups/
 # because GitHub Pages serves index.html. macro_etf_dashboard_auto.html is
 # an old variant — keep ignored if regenerated.
 macro_etf_dashboard_auto.html
+
+# NOTE: .analogs_cache.json (reconstrucción Matrix+Trend 2007→ para los
+# análogos de macro_insights.py, ~1 MB) SÍ se trackea: el runner cloud no
+# tiene .backtest_prices.pkl y lo usa tal cual.

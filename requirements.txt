@@ -7,3 +7,5 @@ yfinance>=0.2.40,<0.3
 # en el Mac está global y no se nota; en CI sin esto TODOS los fetch fallan
 # con ModuleNotFoundError('scipy') (pasó en el primer run cloud, 2026-07-03).
 scipy>=1.10,<2
+# SDK oficial de Anthropic — lo usa macro_insights.py (generate_dashboard.py sigue con urllib).
+anthropic>=2.1,<3

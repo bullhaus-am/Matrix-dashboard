@@ -1250,7 +1250,7 @@ def format_ai_html(analysis_text, date_str):
 # ── HTML generation ────────────────────────────────────────────────────────────
 def generate_html(results, matrix, trend_score_val, trend_history,
                   regime, regime_days, date_str, ai_analysis="", data_date=None,
-                  etf_info=None) -> str:
+                  etf_info=None, macro_html="") -> str:
     etf_info = etf_info or {}
     if data_date is None:
         data_date = date_str
@@ -1263,6 +1263,21 @@ def generate_html(results, matrix, trend_score_val, trend_history,
         ai_analysis_html = format_ai_html(ai_analysis, date_str)
     else:
         ai_analysis_html = '<div class="ai-loading">AI analysis not available — set ANTHROPIC_API_KEY to enable.</div>'
+
+    # Macro Insights (macro_insights.py): sección propia arriba del card AI,
+    # con su CSS; si no hay nota del día no se muestra nada.
+    macro_css = ""
+    macro_section = ""
+    if macro_html:
+        try:
+            from macro_insights import FRAGMENT_CSS as macro_css
+        except ImportError:
+            pass
+        macro_section = (
+            '<div class="sec-head" style="margin-top:28px"><div class="sec-label">Macro Insights · Claude</div>'
+            '<div class="sec-line"></div></div>\n'
+            f'  <div class="ai-section">\n    {macro_html}\n  </div>\n'
+        )
 
     # Acc rank: order all ETFs by net_50 desc (ties broken by net_20, then net_5)
     # so we can assign an Accumulation Grade with the same percentile logic as Exp Grade.
@@ -1628,6 +1643,7 @@ table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,
 @media(max-width:1100px){{.hero-row{{grid-template-columns:1fr 1fr}}.content-row{{grid-template-columns:1fr}}.springs-grid{{grid-template-columns:repeat(2,1fr)}}.ai-body{{grid-template-columns:1fr;gap:24px}}.etf-section{{overflow-x:auto;-webkit-overflow-scrolling:touch}}.etf-section table.etf{{min-width:1400px}}}}
 @media(max-width:768px){{.wrap{{padding:18px}}.stat-box{{grid-template-columns:1fr}}}}
 @media(max-width:640px){{.wrap{{padding:14px}}.topbar-inner{{padding:0 14px}}.hero-row{{grid-template-columns:1fr;gap:12px}}.springs-grid{{grid-template-columns:1fr}}.etf-section{{overflow-x:auto;-webkit-overflow-scrolling:touch}}.etf-section table.etf{{min-width:1280px;font-size:11px}}.cat-tabs{{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;white-space:nowrap}}.cat-tab{{flex:0 0 auto}}h1,.h-title{{font-size:18px}}.mx-row{{flex-wrap:wrap}}}}
+{macro_css}
 </style>
 </head>
 <body>
@@ -1756,7 +1772,7 @@ table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,
     <div class="cat-tabs" id="catTabs"></div>
     <div id="catPanels"></div>
   </div>
-  <div class="sec-head" style="margin-top:28px"><div class="sec-label">AI Analysis · Claude</div><div class="sec-line"></div></div>
+  {macro_section}<div class="sec-head" style="margin-top:28px"><div class="sec-label">AI Analysis · Claude</div><div class="sec-line"></div></div>
   <div class="ai-section">
     {ai_analysis_html}
   </div>
@@ -2155,6 +2171,11 @@ def _parse_args():
                    help="run the Claude AI analysis (no interactive prompt)")
     g.add_argument("--no-ai", dest="ai", action="store_false",
                    help="skip the Claude AI analysis (no interactive prompt)")
+    m = ap.add_mutually_exclusive_group()
+    m.add_argument("--macro", dest="macro", action="store_true", default=None,
+                   help="run the Macro Insights note (macro_insights.py); default: same as the AI analysis")
+    m.add_argument("--no-macro", dest="macro", action="store_false",
+                   help="skip the Macro Insights note")
     ap.add_argument("--no-push", action="store_true",
                     help="do not copy index.html nor commit/push to GitHub Pages")
     return ap.parse_args()
@@ -2275,10 +2296,34 @@ if __name__ == "__main__":
         print("\nAI analysis skipped.")
         ai_analysis = ""
 
+    # Macro Insights (macro_insights.py): nota macro del día sobre el snapshot
+    # recién guardado. Reusa insights/<sesión>.json si ya existe; nunca
+    # interrumpe la generación del dashboard.
+    run_macro = args.macro if args.macro is not None else run_ai
+    macro_html = ""
+    if run_macro:
+        print("\nRunning macro insights...")
+        try:
+            import macro_insights as mi
+            session_iso = snap_path.stem
+            res = mi.run_for_dashboard(session_iso)
+            if res:
+                out, meta = res
+                macro_html = mi.html_fragment(out, meta, session_iso)
+                u = meta.get("usage", {})
+                print(f"  ✓ Macro insights ({meta.get('profile')} · {meta.get('model_served')}"
+                      f" · ${u.get('cost_usd')}) → insights/{session_iso}.json")
+            else:
+                print("  Macro insights skipped (no API key or no output).")
+        except Exception as e:
+            log.error("Macro insights failed: %s", e)
+    else:
+        print("\nMacro insights skipped.")
+
     # Generate HTML
     html = generate_html(ranked, matrix, trend_score_val, trend_history,
                          regime, regime_days, date_str, ai_analysis, data_date,
-                         etf_info=etf_info)
+                         etf_info=etf_info, macro_html=macro_html)
     Path(OUTPUT_FILE).write_text(html, encoding="utf-8")
     print(f"\n✓ Dashboard saved → {OUTPUT_FILE}")
 
@@ -2321,14 +2366,16 @@ if __name__ == "__main__":
         # 1. Stage (dashboard + the day's research snapshot + regime history —
         #    este último es ESTADO del modelo (histéresis sobre la serie
         #    completa): el runner cloud lo necesita persistido entre corridas)
-        r = run_git(["add", "index.html", SNAPSHOT_DIR, "regime_history.json"])
+        #    insights/ lleva la nota macro del día (json/md/html): el runner
+        #    cloud la necesita para la continuidad entre notas.
+        r = run_git(["add", "index.html", SNAPSHOT_DIR, "regime_history.json", "insights"])
         if r.returncode != 0:
             fail("git add", r)
         else:
             # 2. Anything actually staged? If not, skip commit but still try push
             #    (in case a previous commit didn't push).
             staged = run_git(["diff", "--cached", "--quiet", "--",
-                              "index.html", SNAPSHOT_DIR, "regime_history.json"])
+                              "index.html", SNAPSHOT_DIR, "regime_history.json", "insights"])
             if staged.returncode == 0:
                 print("  Nothing changed in index.html/snapshots — skipping commit.")
             else:

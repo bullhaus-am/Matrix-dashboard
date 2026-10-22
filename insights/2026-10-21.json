@@ -1,0 +1,166 @@
+{
+ "session": "2026-10-21",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 69.3,
+  "usage": {
+   "input_tokens": 34474,
+   "output_tokens": 6634,
+   "cache_creation_input_tokens": 4656,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.2939
+  },
+  "generated_at": "2026-10-22T15:28:40",
+  "source": "api"
+ },
+ "output": {
+  "headline": "Stocks día 71 con 12 sesiones bajo 70%: faltan 8 para pasar a Bonds. El flip de ARKK/IVV a Bullish no alcanza para revertirlo mientras FFTY/IVV y Small vs Large sigan Bearish.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "yellow",
+   "size_multiplier": "0.5x",
+   "tilt_long": [
+    "XLE / IEO / IYE (energía)",
+    "XLV / IHF (salud)",
+    "EWZ / ILF (LatAm)"
+   ],
+   "tilt_avoid": [
+    "FFTY",
+    "IWC / ISCG (small y micro caps)",
+    "SOXX / XLK",
+    "ITB / IYT / ITA",
+    "TAN / ICLN",
+    "EWY",
+    "SLV"
+   ],
+   "rationale": "Lo que decide el amarillo es la cuenta regresiva: va 12/20, con 8 sesiones al flip, y ya no es temprana. FFTY/IVV lleva 73 sesiones en Bearish y FFTY está en rank 127. Small vs Large está en Bearish hace 31 sesiones. Lo que impide el rojo: ARKK/IVV pasó a Bullish hoy y QQQJ/QQQ volvió a Neutral (33). El crédito no se rompió: HYG/IEI está en Neutral 28, no en el borde Bearish. Matrix -4 (5/3/9), mejor que el -7 de hace 4 sesiones. Pasa a rojo si la cuenta llega a 15 sin reset o si HYG/IEI cae a ≤15. Breakouts solo donde hay acumulación: IEO tiene net20 +3 y está 8,0% sobre la SMA50; EWZ tiene net50 +7. Nada en tech ni small caps: XLK y SOXX tienen net20 -3."
+  },
+  "regime_read": "Stocks va por el día 71 contra un promedio de 96 para ese régimen (74%). Lleva 12 sesiones con Trend 50%, así que si la racha se sostiene faltan 8 para el flip a Bonds. Para resetear la cuenta alcanza una sola sesión en 70%, pero eso exige sumar 2 puntos a la vez. El más cercano es HYG/IEI, a ~0,7% bajo su MA100 (posición 28 en la banda). Los demás candidatos (Small vs Large, Growth vs Value, RSPD/RSPS, IVV/GSG) están todos más de 1,5% por debajo. Encima, RSPD/IDU (posición 64, apenas ~0,4% sobre la MA100) puede restar un punto en vez de sumarlo. El análogo más cercano, 2018-10-09 (Trend 50%, distancia 4,29), terminó en flip a Bonds a las 12 sesiones.",
+  "insights": [
+   {
+    "title": "La cuenta a Bonds necesita dos puntos que hoy no están a mano",
+    "thesis": "Trend 50% se apoya en IVV (3 pts), IVV/GLD y RSPD/IDU. RSPD/IDU recién volvió el 16-10 y está pegado a su MA100. La única recuperación realista en 8 sesiones es HYG/IEI, que perdió el punto el 12-10. Ese mismo punto lo contradice el HY OAS, que subió +40bp en 20 días (dato al 12-10, viejo). Los análogos dan señales mixtas. De los dos en Stocks con racha bajo 70%, 2018-10-09 flipeó: IVV -4,3% a 20 sesiones y drawdown -8,3%. 2026-09-16 no flipeó: IVV +2,3%. El 20% de flip del summary está inflado por análogos que no son comparables: dos estaban en Bonds y 2013 tenía una racha de +20 sobre el umbral. Mi lectura es que la cuenta probablemente se completa. No hay trade direccional en índice: la conclusión es reducir el tamaño de los breakouts nuevos.",
+    "evidence": [
+     "sessions_below_threshold 12, sessions_to_flip 8",
+     "HYG/IEI Neutral, band 28 (30 hace 5 sesiones), 84 sesiones en Neutral",
+     "RSPD/IDU Neutral 64, flip a Neutral el 2026-10-15",
+     "HY OAS 311bp, +40bp en 20d (as_of 2026-10-12)",
+     "Análogo 2018-10-09: flip en 12 sesiones, IVV fwd20 -4,29%"
+    ],
+    "instruments": [
+     {
+      "ticker": "HYG",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Con la posición sobre 50, HYG/IEI recupera el punto de Trend. Si baja a ≤15, credit confirma el deterioro."
+     },
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Está 0,77% sobre la SMA50. Los 3 puntos de IVV sostienen el 50%; perderlos lleva Trend a 20-30%."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "Una sesión con Trend ≥70%: HYG/IEI sobre su MA100 junto con Growth vs Value o RSPD/RSPS de vuelta en Neutral, con RSPD/IDU sosteniéndose.",
+    "status": "new"
+   },
+   {
+    "title": "El rebote de ARKK/IVV no tiene acumulación detrás",
+    "thesis": "ARKK/IVV pasó a Bullish hoy y QQQJ/QQQ salió de Bearish el 20-10, pero el pulso de corto plazo de ARKK no lo acompaña. ARKK está -6,8% en un mes, -1,0% bajo la EMA20 y tiene net5 0. Que el ratio estuviera clavado en 100 hace 5 sesiones indica que oscila en el borde. El resto del riesgo apunta para abajo: FFTY rank 127, IWC con climb30 -62, MTUM -5,8% en un mes. Creo más en FFTY y las small caps porque son las que miden si los breakouts funcionan.",
+    "evidence": [
+     "ARKK/IVV Bullish 1 sesión, last_flip 2026-10-21",
+     "QQQJ/QQQ Neutral 33 (0 hace 5 sesiones)",
+     "FFTY cx -0,41, vs_sma50 -6,19%",
+     "IWC climb30 -62, vs_sma50 -6,0%",
+     "ILCG-ILCV m1 -4,92"
+    ],
+    "instruments": [
+     {
+      "ticker": "ARKK",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Solo merece atención si sostiene el Bullish 5 sesiones y vuelve sobre la EMA20 con net5 positivo."
+     },
+     {
+      "ticker": "FFTY",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Lleva 73 sesiones en Bearish: los breakouts de growth no están pagando."
+     },
+     {
+      "ticker": "IWC",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Small vs Large lleva 31 sesiones en Bearish."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "QQQJ/QQQ pasa a Bullish y FFTY/IVV vuelve a Neutral en la misma semana.",
+    "status": "new"
+   },
+   {
+    "title": "Liderazgo en energía, salud y LatAm; Wood vs Gold confirma la debilidad del ciclo doméstico",
+    "thesis": "La acumulación real está en energía, salud y LatAm. En energía, IEO es rank 3 con net20 +3 y XLE rank 5 con net20 +2; IVV/GSG lleva 37 sesiones en Bearish. En salud, XLV tiene net20 +2 e IHF +3. En LatAm, EWZ tiene net50 +7 y ILF climb30 +75. Wood vs Gold pasó hoy de Neutral (47) a Bearish. Coincide con ITB en rank 124 e IYT con climb30 -64: el ciclo doméstico sensible a tasas sigue cayendo. CPER/GLD Bullish refleja un GLD débil (-5,3% en un mes), no fuerza del cobre. El sesgo no es risk-on: es commodities más defensivo.",
+    "evidence": [
+     "IEO rank 3, net20 3, vs_sma50 8,03%",
+     "XLE rank 5, m1 10,33%",
+     "EWZ rank 8, net50 7, vs_sma50 11,51%",
+     "Wood vs Gold → Bearish 2026-10-21",
+     "ITB rank 124; IYT climb30 -64"
+    ],
+    "instruments": [
+     {
+      "ticker": "IEO",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Tamaño 0,5x. Está 8% sobre la SMA50: comprar retrocesos hacia la EMA20, no persecuciones."
+     },
+     {
+      "ticker": "XLV",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Defensivo con acumulación (net50 +2) y ATR expandiéndose (1,16)."
+     },
+     {
+      "ticker": "EWZ",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "La mejor acumulación del universo de países."
+     },
+     {
+      "ticker": "ITB",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Wood vs Gold y ITB confirman la debilidad del ciclo doméstico."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "IVV/GSG vuelve a Neutral, o IEO/XLE pasan a net20 negativo.",
+    "status": "new"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "High Yield vs Treasuries (HYG/IEI), posición en la banda",
+    "current": "Neutral 28 (~0,7% bajo la MA100), punto de Trend en 0",
+    "trigger": "Sobre 50 (recupera el punto, Trend 60%) o ≤15 (borde Bearish)",
+    "implication": "Sobre 50: se mantiene 0,5x y vale buscar un segundo punto para resetear la cuenta. ≤15: luz roja, cero breakouts nuevos y recorte de los longs que no sean de energía o salud."
+   }
+  ],
+  "contradictions": [
+   "ARKK/IVV Bullish y QQQJ/QQQ saliendo de Bearish sugieren que el apetito por riesgo vuelve. FFTY/IVV Bearish 73 sesiones, Small vs Large Bearish 31 y MTUM -5,8% en un mes dicen lo contrario. Confío en el lado bajista: ARKK está bajo su EMA20 sin acumulación (net5 0), mientras FFTY mide directamente si los breakouts pagan."
+  ],
+  "blind_spots": "La temporada de balances de megacaps tech (XLK y QQQ ya muestran net20 -3/-2) puede sacar a IVV, que está solo 0,77% sobre la SMA50, de los 3 puntos que sostienen el Trend, y el OAS de 12 días no muestra si el crédito se rompió esta semana.",
+  "changes_vs_previous": "",
+  "dashboard_one_liner": "Stocks d71, 12/20 bajo 70% → 8 a Bonds. ARKK/IVV Bullish sin confirmación; FFTY/Small Bearish. Luz amarilla 0,5x: solo energía, salud y EWZ. Gatillo: HYG/IEI (28)."
+ }
+}
