@@ -1,0 +1,169 @@
+{
+ "session": "2026-10-22",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 60.0,
+  "usage": {
+   "input_tokens": 33983,
+   "output_tokens": 6211,
+   "cache_creation_input_tokens": 4718,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.2837
+  },
+  "generated_at": "2026-10-23T04:44:26",
+  "source": "api"
+ },
+ "output": {
+  "headline": "Stocks día 72 con 13 sesiones bajo 70%: faltan 7 para Bonds y hoy se vació el lado Bullish de la Matrix, con ARKK/IVV, S&P Momentum e IVV/TLT pasando a Neutral el mismo día.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "red",
+   "size_multiplier": "0",
+   "tilt_long": [
+    "XLE",
+    "IEO",
+    "IYE",
+    "XLV",
+    "IHF",
+    "XLP",
+    "EWZ"
+   ],
+   "tilt_avoid": [
+    "SOXX",
+    "XLK",
+    "QQQ",
+    "FFTY",
+    "IWC",
+    "ARKK",
+    "EEM",
+    "EWY",
+    "TAN",
+    "ICLN",
+    "ITA",
+    "SLV",
+    "GDX"
+   ],
+   "rationale": "La cuenta va 13/20 y quedan 7 sesiones. De los cuatro pares de riesgo, FFTY/IVV y Small vs Large siguen Bearish (74 y 32 sesiones). ARKK/IVV duró un día en Bullish y cayó a Neutral en 23. QQQJ/QQQ está en 97, pero por debilidad de QQQ (net20 -3), no por fuerza de QQQJ (net20 -1). El crédito se deteriora: HYG/IEI cayó de 31 a 10 y está al borde Bearish, con HYG-IEF en -2,31 a un mes. La Matrix bajó de -4 a -6 y quedan solo 2 Bullish. La amplitud internacional está colapsada: Country/Region tiene 16% sobre SMA50. Sin breakouts nuevos; las posiciones que ya tenés en energía y salud se gestionan con stops, sin agregar."
+  },
+  "regime_read": "Stocks lleva 72 sesiones, el 75% del promedio de 96 de los regímenes Stocks (82 contando todos). Con 13 sesiones seguidas bajo 70%, si la racha se mantiene el flip a Bonds llega en 7 sesiones, alrededor del 2 de noviembre. Para resetear la cuenta el Trend tiene que volver de 50% a 70%, es decir dos puntos. El más cercano es HYG/IEI, aproximadamente 1,2% bajo su MA100 (band 10). Growth vs Value, RSPD/RSPS, Small vs Large e IVV/GSG están todos Bearish, más de 1,5% debajo, así que hacen falta dos recuperaciones que hoy no están a mano. El riesgo va para el otro lado: RSPD/IDU está en 55, apenas sobre su MA100, y si se pierde el Trend cae a 40%. En los análogos, 3 de 5 terminaron en Bonds dentro de 20 sesiones. 2013-04-17, con la misma racha de 13, flipeó en 7 sesiones con IVV +7,16% igual. El más cercano, 2026-09-16, no flipeó.",
+  "insights": [
+   {
+    "title": "Se vacía el lado Bullish: tres pares pierden la señal el mismo día",
+    "thesis": "S&P Momentum, ARKK/IVV e IVV/TLT pasaron hoy de Bullish a Neutral, y la Matrix queda con 2 Bullish, 7 Neutral y 8 Bearish. Los dos Bullish que quedan son de commodities contra oro: Copper vs Gold e IVV/GLD. Eso habla de oro débil, no de apetito por riesgo. IVV sigue arriba de su MA100 (band 83, unos +1% sobre la media), así que los 3 puntos de IVV en el Trend todavía no están en juego. ARKK/IVV cayó de 100 a 23 en cinco sesiones: el rebote que marcamos ayer como sin acumulación ya se deshizo. Sigue en pie: no había compras detrás (ARKK net20 -1, net5 -1, atr_ratio 1,26 con m1 -8,81).",
+    "evidence": [
+     "ARKK/IVV Neutral 23 (hace 5 sesiones: 100), flip hoy",
+     "S&P Momentum Neutral 83, flip hoy desde Bullish",
+     "IVV/TLT Neutral 86, flip hoy desde Bullish",
+     "Matrix -6, bullish 2",
+     "QQQ net20 -3, SOXX m1 -15,91"
+    ],
+    "instruments": [
+     {
+      "ticker": "ARKK",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Rebote fallido; la volatilidad se expande hacia abajo."
+     },
+     {
+      "ticker": "SOXX",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Está 10,9% bajo su SMA50, net20 -4."
+     },
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Band 83: perder la MA100 restaría 2 puntos del Trend."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "ARKK/IVV vuelve sobre 100 con net5 positivo y S&P Momentum recupera Bullish.",
+    "status": "continuing"
+   },
+   {
+    "title": "El crédito pasa de no ayudar a empujar hacia Bonds",
+    "thesis": "Ayer dijimos que la cuenta necesitaba dos puntos que no estaban a mano. Hoy el candidato más cercano, HYG/IEI, se alejó: band 10, desde 31 hace cinco sesiones. HYG, GHYG y EMHY están todos bajo su SMA50, y HYG-IEF da -2,31 a un mes. Mientras tanto la duración gana: TLT-SHY +1,21 a un mes, TLT net5 +1. Es una rotación clásica de fin de ciclo Stocks: el carry de crédito cede y la duración absorbe. No es pánico, porque SHYG está a solo -0,8% de su SMA50.",
+    "evidence": [
+     "HYG/IEI Neutral 10, near Bearish edge, 85 sesiones Neutral",
+     "HYG-IEF m1 -2,31",
+     "TLT-SHY m1 +1,21; TLT vs_ema20 +2,88",
+     "GHYG vs_sma50 -1,86; EMHY -1,54"
+    ],
+    "instruments": [
+     {
+      "ticker": "HYG",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Tiende a Bearish en el par contra IEI."
+     },
+     {
+      "ticker": "TLT",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Momentum todavía malo (rank 117); trade solo si el flip a Bonds se confirma."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "HYG/IEI sube sobre 50 (ratio sobre su MA100), lo que suma un punto al Trend y pone 60%.",
+    "status": "changed"
+   },
+   {
+    "title": "Liderazgo defensivo-energético con acumulación; el resto de la tabla distribuye",
+    "thesis": "Sigue en pie: energía y salud son los únicos grupos con acumulación neta y tendencia. XLE tiene mom_rank 1 y net20 +2. IEO está en rank 3 con net20 +3. IHF tiene net20 +4 y XLP net20 +3. Ese liderazgo es coherente con Bonds, no con Stocks. Wood vs Gold pasó a Neutral (82), pero por caída del oro (GLD net50 -5, m1 -6,08), no por mejora del ciclo doméstico: ITB sigue en rank 124 y XLI en 116.",
+    "evidence": [
+     "XLE rank 5, net20 +2, vs_sma50 +5,62",
+     "IEO rank 3, net20 +3",
+     "IHF net20 +4, vs_sma50 +7,15",
+     "XLP net20 +3, m1 +9,17",
+     "Wood vs Gold Neutral 82, flip hoy desde Bearish"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLE",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Solo para gestionar lo que ya tenés; sin tamaño nuevo con luz roja. Stop si pierde la EMA20."
+     },
+     {
+      "ticker": "XLV",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Mismo criterio de gestión."
+     },
+     {
+      "ticker": "ITB",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Wood vs Gold no confirma el ciclo."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "XLE y XLV pasan a net5 negativo y quedan bajo la EMA20, mientras FFTY/IVV sale de Bearish.",
+    "status": "continuing"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "High Yield vs Treasuries (HYG/IEI)",
+    "current": "Neutral, band 10 (hace 5 sesiones: 31)",
+    "trigger": "Band 0, que lo pasa a Bearish. Hacia arriba, sobre 50: el ratio supera su MA100 y suma un punto al Trend.",
+    "implication": "Si pasa a Bearish: Matrix -7, crédito confirmando y luz roja hasta el flip a Bonds. Planificá entonces la rotación a duración (TLT/IEF) para cuando la cuenta llegue a 20. Si supera 50: el Trend vuelve a 60% y se reevalúa amarillo a 0.5x solo en energía y salud."
+   }
+  ],
+  "contradictions": [
+   "QQQJ/QQQ en 97, near Bullish edge, sugiere apetito por small/mid growth, mientras ARKK/IVV cae a Neutral y FFTY/IVV lleva 74 sesiones Bearish. Confío en el lado bajista: el ratio sube porque QQQ cae (m1 -4,96, net20 -3), no porque QQQJ suba (m1 -0,23, net20 -1). Un flip a Bullish por ese motivo no es señal de riesgo."
+  ],
+  "blind_spots": "La temporada de resultados de megacaps tech y la próxima Fed pueden revertir en dos sesiones el castigo a QQQ/SOXX y a HYG/IEI, y son justo las lecturas que deciden si la cuenta de 7 sesiones se completa.",
+  "changes_vs_previous": "ARKK/IVV pasó de Bullish (flip de ayer) a Neutral 23. S&P Momentum e IVV/TLT pasaron de Bullish a Neutral. Wood vs Gold pasó de Bearish a Neutral por la caída del oro. La Matrix bajó de -4 a -6. La cuenta avanzó de 12 a 13 y faltan 7. HYG/IEI se acercó al borde Bearish (band 10). La luz pasa de yellow 0.5x a red 0.",
+  "dashboard_one_liner": "Stocks d72, 13/20 bajo 70%: Bonds en 7 sesiones. ARKK, S&P Mom e IVV/TLT pierden Bullish; HYG/IEI en 10. Luz roja: sin breakouts nuevos, solo gestionar XLE/XLV."
+ }
+}
