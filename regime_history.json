@@ -3208,5 +3208,10 @@
     "date": "Oct 30, 2026",
     "score": 0.2,
     "regime": "Stocks"
+  },
+  {
+    "date": "Nov 02, 2026",
+    "score": 0.3,
+    "regime": "Bonds"
   }
 ]
