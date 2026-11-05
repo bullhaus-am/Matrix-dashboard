@@ -1,0 +1,165 @@
+{
+ "session": "2026-11-04",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 66.0,
+  "usage": {
+   "input_tokens": 34058,
+   "output_tokens": 6508,
+   "cache_creation_input_tokens": 4718,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.29
+  },
+  "generated_at": "2026-11-05T04:42:20",
+  "source": "api"
+ },
+ "output": {
+  "headline": "El Trend saltó de 30% a 60% porque IVV recuperó su MA100 (+2) y RSPD/RSPS volvió a sumar (+1): queda a un punto del 70%, pero el rally es defensivo y de tasas, no de riesgo.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "yellow",
+   "size_multiplier": "0.5x",
+   "tilt_long": [
+    "XLV",
+    "IYH",
+    "IBB",
+    "IHE",
+    "XLP"
+   ],
+   "tilt_avoid": [
+    "SOXX",
+    "XLK",
+    "QQQ",
+    "FFTY",
+    "ARKK",
+    "MTUM",
+    "EWY",
+    "EWT",
+    "EEM",
+    "SLV"
+   ],
+   "rationale": "Sube de rojo a amarillo por tres cosas. El Trend pasó de 30% a 60%. El Matrix mejoró de -7 a -2 en 12 sesiones, con RSPD/IDU otra vez Bullish. HYG/IEI se despegó del borde Bearish: band position de 4 a 18. No pasa a verde porque dos de los cuatro pares de riesgo siguen Bearish (FFTY/IVV lleva 83 sesiones, ARKK/IVV 3), Small Cap vs Large Cap está Neutral pero en 15, sobre el borde Bearish, y el crédito no confirma (HYG-IEF m1 -2,5). La acumulación se concentra en salud y staples: XLV net20 4, IBB 5, IHE 4, XLP 4. Tech distribuye: XLK net20 -5, SOXX -5, QQQ -4. Tamaño 0.5x y solo en el grupo defensivo con acumulación."
+  },
+  "regime_read": "Bonds día 3 contra un promedio de 68 sesiones para Bonds (4% del ciclo); no corre ninguna cuenta hacia Stocks porque el streak ≥70% está en 0. Falta un punto: HYG/IEI (band 18, alrededor de 1% bajo su MA100) o Small vs Large (band 15, alrededor de 1% abajo) tienen que cruzar la MA100 para arrancar las 20 sesiones. Growth vs Value e IVV/GSG están Bearish y más lejos. Aun arrancando mañana, el flip a Stocks no llega antes de 20 sesiones. Del lado del piso, el 60% depende de IVV, apenas 1,1% sobre su MA100 (S&P Momentum en 86), y de RSPD/RSPS, apenas 0,4% sobre la suya (band 62).",
+  "insights": [
+   {
+    "title": "60% con dos patas recién recuperadas: un punto para arrancar la cuenta, tres para volver al 30%",
+    "thesis": "Ayer el 30% colgaba de RSPD/IDU. Hoy el salto vino de IVV sobre su MA100 (2 pts) y de RSPD/RSPS (1 pt), las dos cambiadas el 3/11. El margen es fino. IVV está 1,1% sobre su MA100 (S&P Momentum 86, que hace 5 sesiones estaba en 100). RSPD/RSPS está 0,4% arriba (band 62). Si IVV pierde la MA100, el Trend vuelve a 40% y la luz vuelve a rojo. El punto que falta para el 70% está en el crédito o en las small, dos ratios que vienen del borde Bearish. Los 5 análogos (distancia 5,1 a 6,4) estaban todos en Stocks y ninguno flipeó en 20 sesiones. Dieron IVV mediana +1,7% a 20 sesiones, 80% positivos y peor drawdown -1,96%. Es un base rate benigno para el S&P, pero de otro régimen: no sirve como confirmación del cambio.",
+    "evidence": [
+     "Trend últimas 4: 20, 30, 30, 60",
+     "IVV vs MA100: 2 pts, cambió el 2026-11-03",
+     "RSPD/RSPS band 62, Neutral desde el 2026-11-03",
+     "S&P Momentum band 86 (era 100 hace 5 sesiones)",
+     "Análogos: 0 de 5 en Bonds, IVV 20d mediana +1,7%, rango -0,42 a 6,74"
+    ],
+    "instruments": [
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Pierde la MA100 (S&P Momentum bajo 50) y el Trend cae a 40%: vuelve el rojo."
+     },
+     {
+      "ticker": "XLY",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "RSPD m1 +13,3; sostiene RSPD/RSPS e RSPD/IDU, pero está 8% sobre su SMA50: no se compra estirado."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "S&P Momentum cae bajo 50 o RSPD/RSPS pierde la MA100 y el Trend vuelve a ≤40%.",
+    "status": "changed"
+   },
+   {
+    "title": "El crédito salió del borde pero no confirma; el riesgo sigue partido",
+    "thesis": "HYG/IEI pasó de band 4 a 18 en un día. Sigue Neutral y bajo su MA100, y el spread HYG-IEF es -2,5 en un mes. Lo que sube es duración: TLT m1 +5,8 y TLT-SHY +5,3. No hay apetito por high yield. Dentro del riesgo hay divergencia. QQQJ/QQQ está Bullish desde el 30/10, pero porque QQQ cae (m1 -8,9, net20 -4), no porque QQQJ suba (m1 -1,2). ARKK/IVV volvió a Bearish el 2/11 y FFTY está en el puesto 126 de 128. Es una rotación de tasas hacia lo doméstico sensible a tasa (ITB m1 +15,4, XLF +9,6, RSPD +13,3), no un risk-on.",
+    "evidence": [
+     "HYG/IEI band 18 (4 ayer, 39 hace 5 sesiones)",
+     "HYG-IEF m1 -2,52",
+     "TLT-SHY m1 +5,34",
+     "ARKK/IVV Bearish 3 sesiones; FFTY rank 126, net20 -4",
+     "ILCG-ILCV m1 -13,12; SOXX m1 -23,59"
+    ],
+    "instruments": [
+     {
+      "ticker": "HYG",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Si HYG/IEI cruza su MA100 (band >50), da el 70% y arranca la cuenta hacia Stocks."
+     },
+     {
+      "ticker": "ARKK",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Par Bearish, net5 -2, 6,5% bajo su SMA50."
+     },
+     {
+      "ticker": "SOXX",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "14,3% bajo su SMA50, net20 -5: distribución franca."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "HYG/IEI y ARKK/IVV vuelven a Neutral alto o a Bullish mientras FFTY recupera su SMA50.",
+    "status": "continuing"
+   },
+   {
+    "title": "Salud con acumulación sigue en pie como único largo de breakout",
+    "thesis": "Sigue en pie: XLV, IBB e IHE mantienen rank alto y la acumulación más limpia del universo, y hoy son lo único donde se justifica gastar el 0.5x. XLV está en rank 9, net20 4, net5 2. IBB tiene net20 5 y IHE es mom_rank 1. El riesgo es la extensión: XLV está 9,8% sobre su SMA50 e IHI 13,4%. Conviene entrar en pullbacks a la EMA20, no en gaps. TLT como cobertura pierde fuerza: los análogos dan TLT 20d mediana +0,19%, y IVV/TLT está Neutral en 89, cerca de volver a Bullish.",
+    "evidence": [
+     "XLV rank 9, net20 4, vs_sma50 9,84",
+     "IBB rank 12, net20 5",
+     "IHE mom_rank 1, net20 4",
+     "XLP climb30 50, net20 4",
+     "Análogos: TLT 20d mediana +0,19%"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLV",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "0.5x, entrada en pullback a la EMA20 (hoy 5,7% arriba)."
+     },
+     {
+      "ticker": "IBB",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "0.5x; mayor acumulación del grupo."
+     },
+     {
+      "ticker": "TLT",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Sin trade: cobertura débil según los base rates."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "net5 de XLV/IBB pasa a negativo o XLV pierde la EMA20.",
+    "status": "continuing"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "High Yield vs Treasuries (HYG/IEI)",
+    "current": "Neutral, band_position 18; Trend 60%",
+    "trigger": "Band_position >50 (HYG/IEI sobre su MA100): el Trend pasa a 70% y arranca la cuenta de 20 sesiones hacia Stocks. Si vuelve a ≤5, roza el Bearish.",
+    "implication": "Si cruza 50, mantener 0.5x y sumar cíclicos domésticos con acumulación (XLF, XLB) hasta que la cuenta pase 10 sesiones; recién ahí 1x. Si cae a ≤5 junto con S&P Momentum bajo 50, luz roja y 0."
+   }
+  ],
+  "contradictions": [
+   "El Trend en 60% y el IVV sobre su MA100 dicen recuperación. El liderazgo dice otra cosa: FFTY/IVV Bearish hace 83 sesiones, ARKK/IVV Bearish, Growth vs Value Bearish 16 sesiones, ILCG-ILCV -13,1 m1. Confío en el liderazgo. El rebote lo explican tasas y defensivos (TLT +5,8, XLV +13,5, XLP +12,4), y los breakouts que funcionan en ese entorno son los de baja beta, no los de momentum."
+  ],
+  "blind_spots": "El modelo no ve el resultado de las midterms del 3/11 ni su lectura en tasas y política fiscal, y la rotación actual (duración, ITB, RSPD, salud) está construida entera sobre la baja de rendimientos.",
+  "changes_vs_previous": "Trend de 30% a 60%: IVV recuperó su MA100 (+2) y RSPD/RSPS volvió a sumar (+1). RSPD/IDU volvió a Bullish en el Matrix. Matrix de -3 a -2. HYG/IEI de band 4 a 18. La luz pasa de rojo/0 a amarillo/0.5x, restringida a salud y staples. La tesis de salud sigue en pie; la de fragilidad del 30% cambia a fragilidad del 60%.",
+  "dashboard_one_liner": "Bonds d3. Trend 60% (IVV recuperó MA100), a 1 pt del 70%: HYG/IEI en 18, Small/Large en 15. Riesgo partido, rally de tasas y defensivos. Luz amarilla 0.5x: XLV/IBB/IHE."
+ }
+}
