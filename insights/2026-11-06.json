@@ -1,0 +1,369 @@
+{
+ "session": "2026-11-06",
+ "meta": {
+  "profile": "weekly",
+  "label": "nota semanal",
+  "model_requested": "claude-fable-5-1",
+  "model_served": "claude-fable-5-1",
+  "fell_back": false,
+  "effort": "high",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 332.6,
+  "usage": {
+   "input_tokens": 36062,
+   "output_tokens": 27112,
+   "cache_creation_input_tokens": 4474,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 1.7721
+  },
+  "generated_at": "2026-11-07T04:46:57",
+  "source": "api"
+ },
+ "output": {
+  "headline": "Semana de latigazo (Trend 30→60→20→30, diez pares de la Matrix cambiaron en cinco sesiones): el Bonds del día 5 es una liquidación de tecnología y momentum (XLK -16.7% m1, SOXX -27.3%, MTUM -19.6%) mientras siete de once sectores SPDR suben más de 5%; la luz sigue roja porque FFTY es el último del universo (rank 126, mom_rank 128) y HYG/IEI quedó en band 0, a un cierre de volver a Bearish.",
+  "day_type": "weekly",
+  "breakout_light": {
+   "color": "red",
+   "size_multiplier": "0",
+   "tilt_long": [
+    "XLV",
+    "IBB",
+    "IHI",
+    "IHE",
+    "XLP",
+    "ITB",
+    "XLB",
+    "INDA",
+    "TLT"
+   ],
+   "tilt_avoid": [
+    "FFTY",
+    "QQQ",
+    "XLK",
+    "SOXX",
+    "MTUM",
+    "ARKK",
+    "EWT",
+    "EWY",
+    "EEM",
+    "EWZ",
+    "XLE",
+    "IEO",
+    "GBTC",
+    "ETHE",
+    "HYG"
+   ],
+   "rationale": "Rojo por tres señales: FFTY/IVV Bearish 85 sesiones con FFTY -18.0% m1, rank 126, mom_rank 128 y net20 -4 (el universo de breakouts es el peor del mapa); ARKK/IVV Bearish desde 11-02 con ARKK -13.9% m1 y net20 -3; HYG/IEI Neutral en band 0 con flag near Bearish edge y HYG-IEF -2.57 m1. El único Bullish de riesgo, QQQJ/QQQ, es QQQ cayendo -12.2% contra QQQJ -4.3%, no apetito. Breadth partida: 64% de sectores SPDR sobre SMA50 pero 20% de países y 29% de estilos, y lo que sube es salud, staples y tasa. Bonds día 5 sin cuenta hacia Stocks: Trend 30% y techo alcanzable de corto plazo 60%. Sin tamaño nuevo; tilt_long marca dónde está la acumulación para cuando la luz pase a amarilla, no para abrir hoy."
+  },
+  "regime_read": "Bonds día 5 de un promedio de 68 (7% recorrido). La cuenta hacia Stocks no existe: hacen falta 20 sesiones seguidas con Trend ≥70% y hoy está en 30%; aun si IVV recuperara su MA100 (+2 puntos) y RSPD/RSPS volviera a sumar (+1), el techo es 60%, así que el séptimo punto tiene que venir de crédito (HYG/IEI, componente en 0 desde 10-12 y band 0), small caps (ISCB/ILCB en 0 desde 08-27, Neutral 29) o growth (IMCG/IMCV Bearish 18 sesiones), y ninguno está cerca. En calendario: el flip más temprano posible es 20 sesiones después de un día que todavía no existe, o sea no antes de diciembre. Hacia abajo no hace falta reset: con 24 sesiones bajo 70% el régimen ya está asentado y los 5 análogos (0% flipearon dentro de 20 sesiones) coinciden en que el mes que viene se juega dentro de Bonds. Lo que lo profundizaría es HYG/IEI a Bearish más IVV/GLD por debajo de 50, que devuelve el Trend al 20% (mínimo de 60 días).",
+  "insights": [
+   {
+    "title": "Este Bonds es una liquidación de tecnología y momentum, no un bajista amplio: el índice cae con siete sectores subiendo",
+    "thesis": "IVV -5.0% m1 (vs_sma50 -3.9, S&P Momentum Bearish desde 11-05) mientras la mediana de sectores SPDR hace +5.3% m1 y 64% están sobre SMA50. El agujero es uno solo: XLK -16.7 (net20 -5), SOXX -27.3 (net20 -5), QQQ -12.2 (net20 -5), IYW -15.1, MTUM -19.6 (vs_sma50 -15.7) y ILCG-ILCV -12.57 m1. Del otro lado RSPD +9.0, RSPS +8.3, XLF +5.4, XLB +5.4 con net20 +3, XLY +5.3. Eso explica por qué RSPD/IDU es Bullish y RSPD/RSPS volvió a Neutral con el Trend en 30%: los cíclicos equal-weight no están rotos; lo roto es el peso de tecnología dentro de IVV. Para el modelo significa que el Trend Score, calculado sobre IVV ponderado, va a quedar bajo mientras el bloque tecnológico siga en distribución aunque el resto se recupere, y va a llegar tarde a cualquier ensanchamiento. Para él significa que el universo de breakouts vive del lado roto (FFTY -18.0 m1, rank 126) y que un -19.6% en MTUM en un mes es la firma de un desarme de posicionamiento: suele resolverse rápido, pero en cualquier dirección, y no es un piso que se compre con tamaño.",
+    "evidence": [
+     "IVV m1 -4.96 vs mediana SPDR Sectors m1 +5.25; 64% de sectores sobre SMA50",
+     "XLK -16.71 / SOXX -27.28 / QQQ -12.24, los tres con net20 -5",
+     "MTUM -19.63 m1, vs_sma50 -15.72, atr_ratio 1.48",
+     "ILCG - ILCV m1 -12.57; QQQ - IVV m1 -7.28",
+     "RSPD +8.99 y RSPS +8.32 m1: RSPD/IDU Bullish, RSPD/RSPS Neutral 20",
+     "FFTY rank 126, mom_rank 128, net20 -4"
+    ],
+    "instruments": [
+     {
+      "ticker": "QQQ",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "-6.4 vs EMA20 y net20 -5; sin breakouts hasta un net5 positivo con atr_ratio bajando"
+     },
+     {
+      "ticker": "SOXX",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "-21.4 vs SMA50, net20 -5; epicentro del desarme"
+     },
+     {
+      "ticker": "MTUM",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "El primer net5 ≥ +1 con atr_ratio por debajo de 1.2 sería el aviso de que el desarme de momentum terminó"
+     },
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Necesita más de 1.5% para volver a Neutral y recuperar los 2 puntos del Trend; exigir dos cierres"
+     }
+    ],
+    "conviction": "high",
+    "invalidation": "QQQ recuperando EMA20 (hoy -6.43) con net5 ≥ +1 y S&P Momentum volviendo a Neutral invalida la parte de 'desarme en curso'; al revés, si la mediana de sectores SPDR pierde EMA20 (hoy 64% arriba) esto deja de ser sectorial y pasa a bajista amplio.",
+    "status": "changed"
+   },
+   {
+    "title": "Duración rally, crédito no: susto de crecimiento con desinflación, y los commodities que sostienen IVV/GSG Bearish se dan vuelta",
+    "thesis": "TLT +5.2 m1 y TLT-SHY +4.67 m1 (rally de punta larga), TIP-IEF -1.02 (breakevens comprimiendo), HYG-IEF -2.57 y EMB-IEF -1.59: la curva compra desinflación y los spreads no se contagian del rally de tasa. HYG/IEI pasó hoy de Bearish a Neutral, pero en band 0 con flag near Bearish edge: técnicamente un flip, económicamente nada. IVV/TLT pasó a Bearish el 11-05, la primera validación del par más directo del régimen. En commodities cae todo: GSG -4.7 m1 (rank 4 por cx pero -4.2 vs EMA20), CPER -4.5, SLV -12.3 con net50 -10, GLD -1.6 con net50 -5, y energía, que el 10-30 era la única tendencia cíclica viva, tiene XLE/IEO/IYE -5.6/-10.5/-5.1 m1, net5 -2/-1/-2 y atr_ratio 1.43-1.45: distribución con volatilidad expandiendo. IVV/GSG Bearish 49 sesiones es el par más viejo del lado Bearish y está en precio; lo nuevo es que numerador y denominador caen juntos. Lo único que sube con tendencia y confirmación del modelo es la duración (TLT +1.2 vs EMA20, +1.9 vs SMA50, net20 +1). Energía sale de la lista larga.",
+    "evidence": [
+     "TLT m1 +5.2; TLT - SHY m1 +4.67; TIP - IEF m1 -1.02",
+     "HYG - IEF m1 -2.57; EMB - IEF m1 -1.59; HYG/IEI Neutral band 0, near Bearish edge",
+     "IVV/TLT Bearish desde 2026-11-05 (band 34 hace 5 sesiones)",
+     "GSG -4.65 m1, CPER -4.54, SLV -12.31 (net50 -10), GLD -1.61 (net50 -5)",
+     "XLE net5 -2 / IEO net5 -1 / IYE net5 -2, todos 6-9% bajo EMA20 con atr_ratio > 1.4",
+     "IVV/GSG Bearish 49 sesiones"
+    ],
+    "instruments": [
+     {
+      "ticker": "TLT",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Única tendencia con flip de Matrix a favor (IVV/TLT Bearish); cobertura, no trade principal"
+     },
+     {
+      "ticker": "TLH",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Misma pata con menos duración; +1.7 vs SMA50, net20 +1"
+     },
+     {
+      "ticker": "HYG",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Rank 94, climb30 -17; el crédito no acompaña a la tasa"
+     },
+     {
+      "ticker": "XLE",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Sale de la lista larga del 10-30: net5 -2, -6.5 vs EMA20, atr_ratio 1.45"
+     },
+     {
+      "ticker": "GSG",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Si pierde más, IVV/GSG puede salir de Bearish por caída del denominador, no por fuerza de IVV"
+     }
+    ],
+    "conviction": "high",
+    "invalidation": "HYG/IEI cruzando a la mitad alta de la banda (band > 50) con HYG - IEF m1 positivo, o TLT perdiendo EMA20; si ambos pasan juntos la lectura cambia a reflación y la rotación a cíclicos equal-weight tendría más piernas.",
+    "status": "changed"
+   },
+   {
+    "title": "Salud y staples siguen en pie, y por debajo aparece acumulación en cíclicos sensibles a tasa: lo único que se parece a un ensanchamiento",
+    "thesis": "XLV rank 8 con cx 0.29, +9.9 m1, net20 +3 y +6.7 vs SMA50; IBB net20 +4; IHI +12.7 m1 y +8.2 vs SMA50; IHE mom_rank 1 con net20 +3; XLP rank 26, climb30 +54, net50 +4; SPLV net20 +2. Eso sigue en pie porque sigue teniendo acumulación y tendencia. Lo nuevo de la semana es la respuesta a TLT +5.2: ITB +12.4 m1 con net20 +3 y net5 +2, XLB net20 +3 y net5 +2, IAT net20 +2 y net5 +1, IYT net20 +2 y net5 +2, XLF net5 +1. Constructoras, materiales, bancos regionales y transporte recibiendo días de acumulación con tasas cayendo es la primera vez en semanas que hay compra fuera de defensivos. No alcanza para el modelo (ISCB/ILCB Neutral 29 con el componente en 0 desde 08-27; IWC rank 117, climb30 -54; XLI -3.4 m1 con net20 -2 sigue sin participar), y con luz roja no hay tamaño: esto es la lista de dónde mirar cuando pase a amarilla.",
+    "evidence": [
+     "XLV rank 8, cx 0.2939, net20 +3, vs_sma50 +6.71",
+     "IBB net20 +4; IHI m1 +12.7, vs_sma50 +8.16; IHE mom_rank 1",
+     "XLP climb30 +54, net50 +4, net20 +3",
+     "ITB m1 +12.41, net20 +3, net5 +2; XLB net20 +3, net5 +2",
+     "IAT net20 +2, net5 +1 (rank 115, climb30 -63); IYT net20 +2, net5 +2",
+     "XLI m1 -3.4, net20 -2: el cíclico de crecimiento no acompaña"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLV",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Sigue en pie: tendencia más acumulación; solo posiciones ya abiertas"
+     },
+     {
+      "ticker": "IBB",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Mejor net20 (+4) del bloque salud"
+     },
+     {
+      "ticker": "IHI",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "+12.7 m1, climb30 +14"
+     },
+     {
+      "ticker": "XLP",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Acumulación de 50 sesiones (+4), rotación defensiva de fondo"
+     },
+     {
+      "ticker": "ITB",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Mejor candidato a breakout cíclico si la luz pasa a amarilla; depende de TLT"
+     },
+     {
+      "ticker": "XLB",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "net5 +2, +2.2 vs SMA50; rank 43 todavía mediocre"
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "XLV perdiendo EMA20 (hoy +2.41) con net5 negativo y RSPD/IDU perdiendo el Bullish; ITB/XLB con net5 volviendo a cero si TLT se da vuelta.",
+    "status": "changed"
+   },
+   {
+    "title": "La Matrix en -7 es churn, no mejora: diez flips en cinco sesiones, cuatro Neutral en la mitad baja y los dos Bullish no son apetito por riesgo",
+    "thesis": "La secuencia -4, -3, -2, -9, -7 de la semana no es una tendencia, es un par de sesiones de latigazo. Seis Neutral: HYG/IEI en 0 (edge), RSPD/RSPS 20, CPER/GLD 23 (fue de 100 a Bearish a Neutral en cinco sesiones), ISCB/ILCB 29, y IVV/GLD 56 y WOOD/GLD 58 que vienen de Bullish el 11-05. El centro de gravedad está debajo de 50. La tesis del 10-30 de que el -4 estaba inflado por tres Bullish contra oro débil se resolvió: los tres salieron de Bullish. Los dos Bullish de hoy: QQQJ/QQQ es QQQ -12.2 contra QQQJ -4.3 (hueco) y RSPD/IDU es real (RSPD +9.0 vs IDU +5.4) pero tiene 3 sesiones y estaba en 36 hace cinco. De los nueve Bearish, los viejos están en precio (FFTY 85, IVV/GSG 49, ARGT 36, SLV/GLD 33, EEM 23, IMCG/IMCV 18) y los nuevos son el índice mismo (S&P Momentum 2, IVV/TLT 2, ARKK 5). El camino de menor resistencia es -8 con HYG/IEI, y -9/-10 si RSPD/RSPS y CPER/GLD ceden; el único candidato a sumar es ISCB/ILCB, que tiene que ir de 29 a 85. No trade en la Matrix como tal: solo mirar el borde del crédito.",
+    "evidence": [
+     "score_last_20 cierra -4, -3, -2, -9, -7; pairs_flipped_last_5_sessions = 10",
+     "Neutral: HYG/IEI 0, RSPD/RSPS 20, CPER/GLD 23, ISCB/ILCB 29, IVV/GLD 56, WOOD/GLD 58",
+     "QQQJ/QQQ Bullish 100 con QQQ -12.24 y QQQJ -4.25 m1",
+     "RSPD/IDU Bullish 3 sesiones, band 36 hace 5 sesiones",
+     "Bearish nuevos: S&P Momentum 2 sesiones, IVV/TLT 2, ARKK/IVV 5"
+    ],
+    "instruments": [
+     {
+      "ticker": "IJR",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "ISCB/ILCB de 29 a 85 sería el primer +1 con contenido de riesgo; IWC rank 117 dice que todavía no"
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "Dos cierres seguidos con HYG/IEI arriba de 50 y ISCB/ILCB arriba de 50: ahí el churn tendría dirección hacia arriba y la Matrix volvería a -5 o mejor con contenido de riesgo, no de oro.",
+    "status": "continuing"
+   },
+   {
+    "title": "El mundo está peor que el índice y la excepción es India, no Asia tech ni Brasil",
+    "thesis": "Sigue en pie: 20% de países sobre SMA50 (18% la semana pasada), mediana m1 -1.1. El desplome de Asia tech es el mismo trade que SOXX: EWT -21.3 (net20 -5, -18.2 vs SMA50), EWY -22.3 (net20 -4, -20.4 vs SMA50), EWJ -9.3 (net20 -3), EEM -10.2 (net50 -6, net20 -4), EEM-IVV -5.28 m1 y EEM/IVV Bearish 23 sesiones. Brasil confirmó el error de hace dos semanas: EWZ -24.9 m1 y -16.0 vs SMA50 aunque su cx todavía lo ranquea 20. Europa es el bloque que más rank pierde (EWI -77, EWO -74, EWP -69) con precios casi planos: pérdida de momentum, no crash. ARGT -16.5 m1, Bearish 36 sesiones, net20 -5. Lo único con acumulación: INDA +11.7 m1, net20 +4, net5 +2, +6.3 vs SMA50; EWW +7.3 con net20 +3; EZA +7.0 con net20 +3; EWH +7.4 y EWL +9.1 sin acumulación clara. India es la única pata que sube por fuera del ciclo de semis.",
+    "evidence": [
+     "Country/Region: 20% sobre SMA50, mediana m1 -1.12, mediana net20 -0.5",
+     "EWT m1 -21.26 net20 -5; EWY m1 -22.28 net20 -4; EEM net50 -6",
+     "EEM - IVV m1 -5.28; EEM/IVV Bearish 23 sesiones",
+     "EWZ m1 -24.91, vs_sma50 -15.97 (rank 20 por cx, artefacto)",
+     "INDA m1 +11.7, net20 +4, net5 +2; EWW net20 +3; EZA net20 +3",
+     "EWI climb30 -77, EWO -74, EWP -69 con m1 entre -2.5 y +0.9"
+    ],
+    "instruments": [
+     {
+      "ticker": "INDA",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Único país con tendencia y acumulación a la vez; rank 88 todavía bajo, prueba chica si la luz cambia"
+     },
+     {
+      "ticker": "EWW",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "net20 +3, +3.3 vs SMA50"
+     },
+     {
+      "ticker": "EWT",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Misma mano que SOXX; -12.9 vs EMA20 y net20 -5"
+     },
+     {
+      "ticker": "EWY",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "-20.4 vs SMA50, net50 -6"
+     },
+     {
+      "ticker": "EWZ",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "-24.9 m1; el rank 20 es el pasado"
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "EEM/IVV volviendo a Neutral con EWT/EWY recuperando EMA20 y net5 positivo; o INDA perdiendo EMA20 (+5.6 hoy) con net5 negativo.",
+    "status": "continuing"
+   },
+   {
+    "title": "Base rates: los 5 análogos coinciden en que no hay flip en 20 sesiones y en nada más; el rango -20.1% a +7.3% dice que el riesgo está en la cola",
+    "thesis": "Cinco análogos con distancias 5.6 a 6.5, ninguno dominante. Los tres en Bonds son todos de 2008 y están profundos en el régimen (días 140, 236 y 260) con solo 11 pares comparables, contra el día 5 de hoy: coinciden en el estado de las señales, no en la etapa del ciclo. Y se contradicen: 2008-03-20 hizo +4.9% a 20 sesiones con drawdown -0.8, 2008-09-10 hizo -20.1% con GLD +20.5, 2008-08-06 -3.9% con TLT +6.2. Los dos en Stocks (2010-02-04 +7.3% con Trend +70 puntos; 2021-05-19 +2.7% con 5 pares distintos) son el primer día de una caída bajo 70% dentro de un Stocks establecido, otra estructura. Medianas IVV +1.9/+2.7 a 10/20, TLT -1.6/+1.6, GLD +0.4/+0.8, 60% positivos, Trend +10 puntos, Matrix +2. Lo único unánime: 0 de 5 flipearon en 20 sesiones. Uso práctico: no shortear el índice por el régimen (3 de 5 positivos), no agrandar (el peor es -20), y notar que la cobertura con TLT tiene mediana negativa a 10 sesiones, así que es cobertura y no trade.",
+    "evidence": [
+     "n_analogs 5, distancias 5.636 a 6.475; pct_with_regime_flip_within_20 = 0",
+     "Bonds: 2008-09-10 día 260 fwd_20 IVV -20.07; 2008-03-20 día 140 +4.92; 2008-08-06 día 236 -3.9 (TLT +6.2)",
+     "Stocks: 2010-02-04 +7.32 (trend +70 pts); 2021-05-19 +2.72 (5 mismatches)",
+     "Medianas 20 sesiones: IVV +2.72, TLT +1.58, GLD +0.79; pct_ivv_positive_20 60",
+     "median_tlt_10_pct -1.62; worst_ivv_drawdown_20_pct -20.07"
+    ],
+    "instruments": [
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "No trade por base rates: la dispersión manda y el régimen no se mueve en un mes"
+     },
+     {
+      "ticker": "TLT",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Sigue en pie como cobertura; mediana a 10 sesiones negativa, no apalancar la idea"
+     }
+    ],
+    "conviction": "low",
+    "invalidation": "Un análogo con distancia claramente menor y 17 pares comparables que apareciera en las próximas sesiones cambiaría la lectura; hoy ninguno baja de 5.6 y los más cercanos tienen 11 pares.",
+    "status": "continuing"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "HYG/IEI (High Yield vs Treasuries)",
+    "current": "Neutral, band 0, flag near Bearish edge, 1 sesión (fue Bearish el 11-05)",
+    "trigger": "Cualquier cierre con el ratio más de 1.5% bajo su MA100 → Bearish; band > 50 sería la primera mejora real",
+    "implication": "Bearish lleva la Matrix a -8 y reconfirma el crédito a la baja; arriba de 50 sería el primer argumento para amarillo"
+   },
+   {
+    "signal": "IVV/GLD (Stocks vs Gold)",
+    "current": "Neutral 56, venía de 100 hace 5 sesiones; componente del Trend todavía en 1",
+    "trigger": "Band por debajo de 50 → componente a 0 → Trend 20%",
+    "implication": "Vuelta al mínimo de 60 días con un solo cierre de IVV peor que GLD"
+   },
+   {
+    "signal": "RSPD/IDU (Consumer Svcs vs Utils)",
+    "current": "Bullish 3 sesiones, band 36 hace 5 sesiones; vale 1 punto del Trend",
+    "trigger": "Vuelta a la banda (ratio menos de 1.5% sobre MA100) → sigue sumando mientras esté sobre MA100; perder MA100 → Trend 20%",
+    "implication": "Es el punto más joven de los tres que sostienen el 30%"
+   },
+   {
+    "signal": "S&P Momentum (IVV vs su MA100)",
+    "current": "Bearish band 0; IVV -3.19 vs EMA20, -3.88 vs SMA50",
+    "trigger": "Cierre sobre MA100 (más de 1.5% de recorrido) → +2 puntos → Trend 50%",
+    "implication": "Pasó el 11-04 y duró una sesión; exigir dos cierres antes de mover la luz"
+   },
+   {
+    "signal": "RSPD/RSPS (Consumer Discr. vs Staples)",
+    "current": "Neutral 20, 4 sesiones",
+    "trigger": "≤15 → Bearish",
+    "implication": "Matrix -8 y confirma que la suba de XLY es tasa, no consumo"
+   },
+   {
+    "signal": "CPER/GLD (Copper vs Gold)",
+    "current": "Neutral 23, 1 sesión, tras ir de 100 a Bearish en cinco sesiones",
+    "trigger": "≤15 → Bearish",
+    "implication": "El proxy de crecimiento global se alinea con TIP - IEF -1.02: susto de crecimiento"
+   },
+   {
+    "signal": "ISCB/ILCB (Small vs Large)",
+    "current": "Neutral 29, subiendo desde 0 el 11-02; componente del Trend en 0",
+    "trigger": "≥85 → Bullish y componente a 1",
+    "implication": "Primer +1 con contenido de riesgo; IWC rank 117 y climb30 -54 dicen que falta"
+   },
+   {
+    "signal": "Cuenta hacia Stocks",
+    "current": "0 de 20 sesiones ≥70%; Trend 30%, techo de corto plazo 60%",
+    "trigger": "Trend ≥70% necesita crédito, small caps o growth además de IVV y RSPD/RSPS",
+    "implication": "Ningún flip posible antes de diciembre; tamaño de breakouts gobernado por la luz, no por el régimen"
+   },
+   {
+    "signal": "Desarme de momentum (MTUM / QQQ)",
+    "current": "net5 -1 / -1, atr_ratio 1.48 / 1.61",
+    "trigger": "Primer net5 ≥ +1 con atr_ratio por debajo de 1.2",
+    "implication": "Fin del washout; ahí el 30% tiene chance de rehacer el camino a 50-60% con dos cierres"
+   }
+  ],
+  "contradictions": [
+   "Breadth sectorial (64% de SPDR sobre SMA50, mediana m1 +5.25) contra Trend 30% e IVV Bearish: confío en los componentes para régimen y tamaño, porque los breakouts viven en el universo de FFTY (-18.0 m1) y no en el equal-weight; confío en la breadth para no shortear el índice.",
+   "Rankings por cx (energía 3-6, QQQ/XLK/SNSR entre los mayores climbers con +55/+42/+68) contra precio y acumulación de 1 mes (XLE -5.6 net5 -2, QQQ -12.2 net20 -5, XLK -16.7 net20 -5): confío en el 1 mes y el net; la pendiente de 91 sesiones arrastra agosto-septiembre y es la lectura más engañosa del tablero hoy.",
+   "QQQJ/QQQ Bullish contra ARKK/IVV Bearish 5 y FFTY/IVV Bearish 85: confío en ARKK y FFTY; el Bullish es QQQ cayendo -12.2 contra QQQJ -4.3 y no tiene lectura de apetito.",
+   "HYG/IEI flip a Neutral hoy contra HYG - IEF -2.57 m1, EMB - IEF -1.59 y band 0: confío en los spreads; el flip es redondeo en el borde. Lo mismo vale al revés para el Bearish del 11-05: en el borde ningún cierre único vale.",
+   "TLT +5.2 (compra de duración por desinflación, TIP - IEF -1.02) contra acumulación en ITB/XLB/IAT/IYT (lectura de reflación): conviven a corto plazo porque la caída de tasas levanta a los sensibles a tasa, pero XLI -3.4 con net20 -2 no participa, así que es un trade de tasa y no de crecimiento; confío en TLT/TIP.",
+   "Análogos 60% positivos a 20 sesiones contra 2008-09-10 -20.07: no confío en ninguna de las dos medianas; confío en lo único unánime, que es 0 de 5 flips dentro de 20 sesiones, y en que los tres Bonds son de día 140-260 y no describen un día 5."
+  ],
+  "blind_spots": "El modelo ve que tecnología y momentum se desarman pero no por qué: no distingue una rotación por valuación o capex de un cambio de posicionamiento forzado, y un -19.6% en MTUM en un mes es casi por definición posicionamiento, que suele revertir más rápido que lo que la MA100 tarda en enterarse; la lectura de Trend 30% es la más expuesta a un rebote violento que el 11-04 ya mostró en miniatura. Tampoco ve qué hay detrás de TLT +5.2: si es política monetaria el crédito debería seguir y HYG/IEI saldría del borde solo; si es crecimiento el crédito sigue rezagado, y el modelo solo registra el rezago, así que HYG/IEI en band 0 es un cierre de titular, no de tendencia. No ve FX ni flujos detrás de EWY -22.3, EWT -21.3 y EWZ -24.9, que concentran el riesgo de que el Bearish de EEM/IVV se extienda o se corte por una moneda. No ve resultados ni guías en semis, que es lo que decide si SOXX net20 -5 es final o mitad de camino. Los análogos de 2008 comparan 11 pares y arrastran la crisis financiera dentro de la ventana, lo que infla la cola negativa sin que el modelo pueda decir si hoy hay algo parecido en crédito (HYG -0.7 vs SMA50 dice que no). Y es viernes: dos días de gap sobre cuatro Neutral en la mitad baja de la banda.",
+  "changes_vs_previous": "Lo que acertó la semana: el weekly del 10-30 anticipó el pase a Bonds mecánico del 11-02 y dijo que el -4 de la Matrix estaba inflado por tres Bullish contra oro débil; esta semana IVV/GLD, WOOD/GLD y CPER/GLD salieron de Bullish y el -7 de hoy es más honesto. El 11-02 leyó bien que el 30% era rotación defensiva y no reparación. Lo que falló: el amarillo del 11-04 fue el error de la semana; el 60% dependía de IVV cruzando su MA100 por un pelo y duró una sesión, y el 11-05 volvió a rojo con el Trend en 20%. Regla que queda: con el Trend por debajo de 50% y diez pares flipeando en cinco sesiones, ningún cierre único mueve la luz; se exigen dos. El 11-05 dijo que el crédito 'pasó a confirmar a la baja' y hoy HYG/IEI está Neutral en 0: también fue un cierre único en el borde, y la lectura correcta es la de los spreads (HYG - IEF -2.57), no la del flag. Lo que las notas diarias no vieron: la fuerza fuera de tecnología es más ancha que salud y staples (64% de sectores sobre SMA50, acumulación en ITB, XLB, IAT, IYT); lo enmarcaron como rotación defensiva y es defensiva más tasa. Lo que cambio: energía sale de la lista larga (el 10-30 la tenía como única tendencia cíclica viva; hoy XLE/IEO/IYE están 6-9% bajo EMA20 con net5 negativo y atr expandiendo), entran ITB/XLB como watch, TLT queda como cobertura con base rate flojo a 10 sesiones, e INDA reemplaza a cualquier idea de EM. Brasil, ya marcado como error el 10-30, hizo -24.9 en el mes.",
+  "dashboard_one_liner": "Bonds día 5, Trend 30%, Matrix -7, luz roja: FFTY último del universo, HYG/IEI en el borde Bearish. Lo que sube (XLV, XLP, ITB, TLT) es tasa y defensa, no breakout de riesgo."
+ }
+}
