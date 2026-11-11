@@ -3238,5 +3238,10 @@
     "date": "Nov 09, 2026",
     "score": 0.4,
     "regime": "Bonds"
+  },
+  {
+    "date": "Nov 10, 2026",
+    "score": 0.3,
+    "regime": "Bonds"
   }
 ]
