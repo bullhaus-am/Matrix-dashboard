@@ -58,6 +58,7 @@ All tunables are constants at the top of `generate_dashboard.py`:
 | `SLOPE_WINDOW`   | `91`    | Bars for the log-linear regression that produces the "cx" score  |
 | `MATRIX_BAND`    | `0.015` | ±1.5% Neutral band around the Matrix MA100                       |
 | `TREND_MA`       | `100`   | Moving-average period used in Trend Score and Matrix             |
+| `PINNED_PROXY`   | `ISCB→IJR`, `ILCB→IVV` | Tickers always read through a proxy in the Trend Score and the Matrix (Small vs Large is S&P 600 / S&P 500 since Yahoo truncated the ISCB/ILCB history). Empty it by hand to go back to the real pair |
 
 Environment overrides:
 

@@ -161,10 +161,23 @@ EXTRA_TICKERS = ['HYG','IEI','ISCB','ILCB','IMCG','IMCV','RSPD','RSPS','IDU','GL
 # todo el modelo: MA100 = NaN → trend 0%, chart de 252 días vacío, Matrix
 # toda Neutral. Ahora cada par se alinea por separado y, si un ticker trae
 # menos de MIN_HISTORY barras, se usa su proxy (misma lectura: small vs large
-# con S&P 600 / S&P 500). Cuando Yahoo vuelva a servir la historia completa,
-# el proxy deja de usarse solo.
+# con S&P 600 / S&P 500).
 HISTORY_PROXY = {'ISCB': 'IJR', 'ILCB': 'IVV'}
 MIN_HISTORY   = TREND_MA + 20
+
+# Proxies FIJOS (2026-11-12): estos tickers se leen SIEMPRE con su proxy,
+# traigan la historia que traigan. Con solo HISTORY_PROXY, ISCB/ILCB volvían
+# solos al par real al juntar MIN_HISTORY barras (≈ 6-ene-2027): el sub-score
+# Small/Large y su par de la Matrix cambiaban de fuente de un día para otro
+# (flip espurio posible; IJR/IVV e ISCB/ILCB discreparon ~11% de las sesiones
+# jun-oct 2026) y el gráfico de 252 días leía 0 en ese componente para todas
+# las fechas en que el par real todavía no tenía MA100.
+# Para volver al par real: vaciar este dict a mano. Conviene esperar a que
+# ISCB/ILCB tengan ≥ 252 + TREND_MA barras (el gráfico completo), y saber que
+# el día del cambio el componente puede flipear solo por el cambio de fuente.
+# HISTORY_PROXY queda de red: si PINNED_PROXY se vacía antes de tiempo, el
+# proxy se sigue usando hasta que el ticker junte MIN_HISTORY barras.
+PINNED_PROXY  = {'ISCB': 'IJR', 'ILCB': 'IVV'}
 
 
 # ── Data fetching ──────────────────────────────────────────────────────────────
@@ -500,12 +513,28 @@ def _aligned(prices: dict, *tickers) -> list[pd.Series]:
 def build_price_series(all_data: dict, tickers: list[str]) -> dict:
     """Close series por ticker para Trend Score / Matrix, con proxies.
 
-    Un ticker con menos de MIN_HISTORY barras se reemplaza por su proxy de
-    HISTORY_PROXY (con warning); si tampoco hay proxy, queda como esté y el
-    sub-score correspondiente será 0 en vez de romper el modelo entero."""
+    Un ticker de PINNED_PROXY se lee siempre con su proxy, tenga la historia
+    que tenga (si el proxy no bajó o es corto, se avisa y se sigue con la serie
+    propia). El resto: un ticker con menos de MIN_HISTORY barras se reemplaza
+    por su proxy de HISTORY_PROXY (con warning); si tampoco hay proxy, queda
+    como esté y el sub-score correspondiente será 0 en vez de romper el modelo
+    entero."""
+    def closes(t):
+        return all_data[t]["close"].dropna() if t in all_data else pd.Series(dtype=float)
+
     prices = {}
     for t in tickers:
-        s = all_data[t]["close"].dropna() if t in all_data else pd.Series(dtype=float)
+        s = closes(t)
+        pinned = PINNED_PROXY.get(t)
+        if pinned:
+            ps = closes(pinned)
+            if len(ps) >= MIN_HISTORY:
+                log.info("%s: read through its pinned proxy %s (%d bars; Yahoo serves %d of %s).",
+                         t, pinned, len(ps), len(s), t)
+                prices[t] = ps
+                continue
+            log.warning("%s: pinned proxy %s has only %d bars (< %d) — falling back to %s's own series.",
+                        t, pinned, len(ps), MIN_HISTORY, t)
         if len(s) < MIN_HISTORY:
             proxy = HISTORY_PROXY.get(t)
             ps = all_data[proxy]["close"].dropna() if proxy and proxy in all_data else None

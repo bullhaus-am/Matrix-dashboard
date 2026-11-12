@@ -224,9 +224,43 @@ def test_build_price_series_uses_proxy_when_history_is_short():
 
 
 def test_build_price_series_keeps_long_history_untouched():
-    all_data = {"ISCB": _close_df(500, start=50), "IJR": _close_df(500), "IVV": _close_df(500)}
-    prices = gd.build_price_series(all_data, ["ISCB", "IVV"])
+    """Un ticker sin proxy fijo y con historia completa no se toca."""
+    all_data = {"HYG": _close_df(500, start=50), "IJR": _close_df(500), "IVV": _close_df(500)}
+    prices = gd.build_price_series(all_data, ["HYG", "IVV"])
+    assert prices["HYG"].equals(all_data["HYG"]["close"])
+    assert prices["IVV"].equals(all_data["IVV"]["close"])
+
+
+# ── Proxy fijo (2026-11-12): ISCB/ILCB no vuelven solos al par real ──────────
+def test_pinned_proxy_is_used_even_when_the_ticker_has_full_history():
+    all_data = {"ISCB": _close_df(500, start=50), "ILCB": _close_df(500, start=70),
+                "IJR": _close_df(500), "IVV": _close_df(500, start=200)}
+    prices = gd.build_price_series(all_data, ["ISCB", "ILCB", "IVV"])
+    assert prices["ISCB"].equals(all_data["IJR"]["close"])
+    assert prices["ILCB"].equals(all_data["IVV"]["close"])
+
+
+def test_pinned_proxy_does_not_switch_off_when_history_reaches_min_history():
+    """El caso de enero 2027: ISCB junta MIN_HISTORY barras y antes volvía solo."""
+    for n in (gd.MIN_HISTORY - 1, gd.MIN_HISTORY, gd.MIN_HISTORY + 1):
+        all_data = {"ISCB": _close_df(n, start=50), "IJR": _close_df(500)}
+        prices = gd.build_price_series(all_data, ["ISCB"])
+        assert prices["ISCB"].equals(all_data["IJR"]["close"]), n
+
+
+def test_pinned_proxy_missing_falls_back_to_the_tickers_own_series():
+    all_data = {"ISCB": _close_df(500, start=50), "IVV": _close_df(500)}     # IJR no bajó
+    prices = gd.build_price_series(all_data, ["ISCB"])
     assert prices["ISCB"].equals(all_data["ISCB"]["close"])
+
+
+def test_emptying_pinned_proxy_goes_back_to_the_real_ticker(monkeypatch):
+    """Volver al par real es una decisión manual: vaciar PINNED_PROXY."""
+    monkeypatch.setattr(gd, "PINNED_PROXY", {})
+    all_data = {"ISCB": _close_df(500, start=50), "IJR": _close_df(500)}
+    assert gd.build_price_series(all_data, ["ISCB"])["ISCB"].equals(all_data["ISCB"]["close"])
+    short = {"ISCB": _close_df(61, start=50), "IJR": _close_df(500)}         # HISTORY_PROXY sigue de red
+    assert gd.build_price_series(short, ["ISCB"])["ISCB"].equals(short["IJR"]["close"])
 
 
 def test_aligned_inner_joins_on_dates():
