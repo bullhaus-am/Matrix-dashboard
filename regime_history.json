@@ -2525,6 +2525,12 @@
     "regime": "Bonds"
   },
   {
+    "date": "Apr 08, 2026",
+    "score": 0.2,
+    "backfilled": true,
+    "regime": "Bonds"
+  },
+  {
     "date": "Apr 09, 2026",
     "score": 0.4,
     "regime": "Bonds"
@@ -2572,6 +2578,12 @@
   {
     "date": "Apr 22, 2026",
     "score": 0.8,
+    "regime": "Bonds"
+  },
+  {
+    "date": "Apr 23, 2026",
+    "score": 0.8,
+    "backfilled": true,
     "regime": "Bonds"
   },
   {
@@ -2655,6 +2667,12 @@
     "regime": "Bonds"
   },
   {
+    "date": "May 18, 2026",
+    "score": 0.6,
+    "backfilled": true,
+    "regime": "Bonds"
+  },
+  {
     "date": "May 19, 2026",
     "score": 0.6,
     "regime": "Bonds"
@@ -2665,6 +2683,12 @@
     "regime": "Bonds"
   },
   {
+    "date": "May 21, 2026",
+    "score": 0.6,
+    "backfilled": true,
+    "regime": "Bonds"
+  },
+  {
     "date": "May 22, 2026",
     "score": 0.6,
     "regime": "Bonds"
@@ -2672,6 +2696,12 @@
   {
     "date": "May 26, 2026",
     "score": 0.6,
+    "regime": "Bonds"
+  },
+  {
+    "date": "May 27, 2026",
+    "score": 0.6,
+    "backfilled": true,
     "regime": "Bonds"
   },
   {
@@ -2722,6 +2752,12 @@
   {
     "date": "Jun 10, 2026",
     "score": 0.6,
+    "regime": "Bonds"
+  },
+  {
+    "date": "Jun 11, 2026",
+    "score": 0.9,
+    "backfilled": true,
     "regime": "Bonds"
   },
   {
@@ -2785,6 +2821,12 @@
     "regime": "Bonds"
   },
   {
+    "date": "Jul 01, 2026",
+    "score": 1.0,
+    "backfilled": true,
+    "regime": "Bonds"
+  },
+  {
     "date": "Jul 02, 2026",
     "score": 0.9,
     "regime": "Bonds"
@@ -2812,12 +2854,12 @@
   {
     "date": "Jul 10, 2026",
     "score": 0.8,
-    "regime": "Bonds"
+    "regime": "Stocks"
   },
   {
     "date": "Jul 13, 2026",
     "score": 0.8,
-    "regime": "Bonds"
+    "regime": "Stocks"
   },
   {
     "date": "Jul 14, 2026",
