@@ -27,9 +27,16 @@ For unattended runs (cron / launchd) use the CLI flags:
 |--------------|---------------------------------------------------------------|
 | `--macro`    | Generate the Macro Insights note without prompting            |
 | `--no-macro` | Skip the Macro Insights note without prompting                |
-| `--no-push`  | Skip the `index.html` copy and the git commit/push            |
+| `--no-push`  | No git at all: no sync before computing, no `index.html` copy, no commit/push |
 
 With no flag and no interactive terminal (e.g. cron), the note is skipped.
+
+Unless `--no-push` is given, the script first brings the checkout up to date
+with `origin/main` (fast-forward, or a rebase if there are unpushed local
+commits) **before** reading `regime_history.json`: the cloud runner commits
+the model state every day, so a stale checkout would compute the regime from
+an old history. If the sync fails (dirty state files, conflict, no network)
+the dashboard is still generated from the local state but is not pushed.
 
 Data note: if the script runs while the US market is open, today's
 still-forming daily bar is dropped so metrics always use the last *completed*
@@ -66,7 +73,11 @@ A `.env` file in this folder is auto-loaded.
 
 - **Trend Score (0-100%)** — 9 macro sub-scores. ≥70% = Stocks regime.
 - **Regime (Bonds / Stocks)** — symmetric hysteresis, 20 consecutive days to flip.
-  Persisted in `regime_history.json` so the regime survives across runs.
+  Persisted in `regime_history.json` so the regime survives across runs, one
+  entry per market session. A session that was never run (or is missing from
+  a stale checkout) is filled in with the Trend Score recomputed from current
+  prices and tagged `"backfilled": true`, so the hysteresis counts sessions,
+  not runs. Saved point-in-time scores are never overwritten.
 - **Matrix** — 17 ETF-pair ratios vs MA100 ±1.5% band → Bullish / Neutral / Bearish.
 - **ETF table** — per-category ranking by exponential-regression momentum, with
   accumulation/distribution counts (50/20/5 day), ATR, distance from EMA20/SMA50,
@@ -168,4 +179,11 @@ exercised by running the full script.
   or delists symbols. Retries are built in; if a ticker is permanently dead,
   remove it from `ETF_UNIVERSE` / `EXTRA_TICKERS`.
 - **Regime looks wrong after a data gap** — the regime is recomputed every run
-  from `regime_history.json`. Delete that file to rebuild from scratch.
+  from `regime_history.json`, and sessions missing from it within the last 252
+  are backfilled automatically (the run logs which ones). Deleting the file
+  rebuilds it from that recomputed 252-session series only, so the older
+  point-in-time history is lost — prefer restoring it from git.
+- **"Could not sync with origin/main"** — the run was not pushed. The message
+  carries git's reason; the usual one is local changes to generated files left
+  by a `--no-push` run (`regime_history.json`, `snapshots/`). Stash or discard
+  them (`git stash`) and re-run.

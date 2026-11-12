@@ -11,7 +11,7 @@ Output:
     macro_etf_dashboard.html
 """
 
-import os, sys, time, json, logging, random
+import os, sys, time, json, logging, random, shutil, subprocess
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -575,6 +575,53 @@ def save_regime_history(history: list):
     import json as _j
     Path(REGIME_HISTORY_FILE).write_text(_j.dumps(history, indent=2))
 
+REGIME_DATE_FMT = "%b %d, %Y"   # formato de "date" en regime_history.json
+
+def _regime_date(s: str):
+    return datetime.strptime(s, REGIME_DATE_FMT).date()
+
+def merge_regime_history(saved: list, session: str, score: float,
+                         recomputed: list | None = None) -> tuple[list, list]:
+    """Historial del régimen con UNA entrada por sesión, ordenado por fecha.
+
+    La histéresis cuenta entradas consecutivas, así que una sesión que falta
+    (corrida que no se hizo, checkout local atrasado, Yahoo sirviendo datos
+    viejos) corre el flip. Acá:
+
+      * la sesión de hoy (`session`, formato REGIME_DATE_FMT) se agrega, o se
+        refresca si ya estaba (re-corrida: pudo haber sanado datos);
+      * las sesiones que faltan entre la primera entrada guardada y hoy se
+        rellenan con el Trend Score recomputado — `recomputed` es la lista
+        [(fecha, score)] de trend_scores_by_date() — y quedan marcadas con
+        "backfilled": true, porque ese score sale de los precios de HOY y no
+        de los del día (puede diferir 0.1 del que se habría guardado);
+      * si no hay historial guardado, se siembra con toda la serie recomputada
+        en vez de arrancar con una sola entrada.
+
+    Las entradas guardadas nunca se pisan con valores recomputados. Devuelve
+    (historial, fechas rellenadas)."""
+    today = _regime_date(session)
+    by_date = {_regime_date(e["date"]): e for e in saved}
+    first_saved = min(by_date) if by_date else None
+
+    entry = by_date.get(today)
+    if entry is None:
+        by_date[today] = {"date": session, "score": score}
+    else:
+        entry["score"] = score
+        entry.pop("backfilled", None)       # ahora es un valor point-in-time
+
+    filled = []
+    for ts, s in recomputed or []:
+        d = ts.date() if hasattr(ts, "date") else ts
+        if d >= today or d in by_date:
+            continue
+        if first_saved is not None and d <= first_saved:
+            continue
+        by_date[d] = {"date": d.strftime(REGIME_DATE_FMT), "score": s, "backfilled": True}
+        filled.append(d)
+    return [by_date[d] for d in sorted(by_date)], sorted(filled)
+
 def compute_regime(trend_series: list[float], threshold: float = 0.7,
                    confirm_days: int = 20) -> tuple[str, int]:
     """
@@ -661,23 +708,31 @@ def compute_matrix(prices: dict) -> list[dict]:
     return results
 
 # ── Trend history ──────────────────────────────────────────────────────────────
-def build_trend_history(prices: dict, n_days: int = 252) -> list[dict]:
-    """Trend Score de las últimas n_days sesiones (ventana rodante por fecha).
+def trend_scores_by_date(prices: dict, n_days: int = 252) -> list[tuple]:
+    """(fecha de sesión, Trend Score) de las últimas n_days sesiones.
 
     Cada día se recorta cada serie hasta la fecha de esa sesión (IVV manda el
     calendario) y se recomputa el score, igual que si se hubiera corrido ese
     día. Recortar por fecha y no por posición tolera tickers con distinta
     cantidad de barras."""
     ivv = prices['IVV']
-    history = []
+    out = []
     for offset in range(min(n_days, len(ivv)) - 1, -1, -1):
         cutoff = ivv.index[-1 - offset]
         p = {t: v.loc[:cutoff] for t, v in prices.items()}
         if len(p['IVV']) < TREND_MA + 15:
             continue
         score, _ = compute_trend_score(p)
-        history.append({'d': cutoff.strftime('%b %d'), 's': score})
-    return history
+        out.append((cutoff, score))
+    return out
+
+def format_trend_history(dated_scores: list[tuple]) -> list[dict]:
+    """[(fecha, score)] → filas {'d': 'Nov 11', 's': 0.5} del gráfico de 252 días."""
+    return [{'d': d.strftime('%b %d'), 's': s} for d, s in dated_scores]
+
+def build_trend_history(prices: dict, n_days: int = 252) -> list[dict]:
+    """Trend Score de las últimas n_days sesiones, en el formato del gráfico."""
+    return format_trend_history(trend_scores_by_date(prices, n_days))
 
 # ── Daily snapshot (research / backtesting dataset) ───────────────────────────
 SNAPSHOT_DIR = "snapshots"
@@ -1832,6 +1887,123 @@ function swTab(el,pid){{
 </body>
 </html>"""
 
+# ── Git: sincronizar antes de calcular, publicar al final ──────────────────────
+PUBLISH_REMOTE = "origin"
+PUBLISH_BRANCH = "main"
+# Lo que se commitea: el dashboard, el snapshot del día, el historial del
+# régimen (ESTADO del modelo: la histéresis corre sobre la serie completa, el
+# runner cloud lo necesita persistido entre corridas) y la nota macro (la
+# siguiente nota lee las anteriores).
+PUBLISH_PATHS = ["index.html", SNAPSHOT_DIR, REGIME_HISTORY_FILE, "insights"]
+
+def _git(repo_dir, *args) -> subprocess.CompletedProcess:
+    """git en `repo_dir`, con locale en inglés (mensajes determinísticos aunque
+    el git instalado esté en español/portugués) y stdout + stderr capturados."""
+    env = {**os.environ, "LC_ALL": "C", "LANG": "C", "LANGUAGE": "C"}
+    return subprocess.run(["git", "-C", str(repo_dir), *args],
+                          capture_output=True, text=True, env=env)
+
+def _git_err(r: subprocess.CompletedProcess) -> str:
+    return ((r.stderr or "").strip() or (r.stdout or "").strip()
+            or f"(no output, exit {r.returncode})")
+
+def sync_with_remote(repo_dir) -> tuple[bool, str]:
+    """Deja el checkout al día con origin/main ANTES de leer el estado del modelo.
+
+    regime_history.json, snapshots/ e insights/ los commitea a diario el runner
+    cloud; una corrida local sobre un checkout atrasado calcularía el régimen
+    con un historial viejo (y su commit chocaría con el remoto al publicar).
+
+    - Sin commits locales pendientes: fast-forward. Tolera archivos modificados
+      que el remoto no toca (p. ej. macro_etf_dashboard.html, que cada corrida
+      reescribe y nunca se commitea); si el remoto toca alguno, git se niega
+      sin modificar nada.
+    - Con commits locales sin pushear: rebase sobre el remoto. Si no se puede
+      (árbol sucio o conflicto) se aborta y el checkout queda como estaba.
+
+    Devuelve (ok, detalle). Con ok=False quien llama no debe publicar."""
+    r = _git(repo_dir, "rev-parse", "--abbrev-ref", "HEAD")
+    branch = r.stdout.strip() if r.returncode == 0 else ""
+    if branch != PUBLISH_BRANCH:
+        return False, (f"not on branch '{PUBLISH_BRANCH}' (current: '{branch or '?'}')"
+                       if r.returncode == 0 else _git_err(r))
+    r = _git(repo_dir, "fetch", PUBLISH_REMOTE, PUBLISH_BRANCH)
+    if r.returncode != 0:
+        return False, f"git fetch: {_git_err(r)}"
+
+    def count(rng: str) -> int:
+        c = _git(repo_dir, "rev-list", "--count", rng)
+        return int(c.stdout.strip() or 0) if c.returncode == 0 else -1
+
+    behind, ahead = count("HEAD..FETCH_HEAD"), count("FETCH_HEAD..HEAD")
+    if behind < 0 or ahead < 0:
+        return False, "could not compare HEAD with the remote"
+    if behind == 0:
+        return True, "already up to date" + (f" ({ahead} local commit(s) not pushed yet)" if ahead else "")
+    if ahead == 0:
+        r = _git(repo_dir, "merge", "--ff-only", "FETCH_HEAD")
+        if r.returncode != 0:
+            return False, f"git merge --ff-only: {_git_err(r)}"
+        return True, f"fast-forwarded {behind} commit(s)"
+    r = _git(repo_dir, "rebase", "FETCH_HEAD")
+    if r.returncode != 0:
+        err = _git_err(r)
+        _git(repo_dir, "rebase", "--abort")     # no-op si el rebase no llegó a empezar
+        return False, f"git rebase: {err}"
+    return True, f"rebased {ahead} local commit(s) onto {behind} new remote commit(s)"
+
+def publish(repo_dir, commit_msg: str) -> bool:
+    """Commitea PUBLISH_PATHS y pushea. True si el remoto quedó actualizado.
+
+    El checkout ya se sincronizó al arrancar (sync_with_remote), así que el
+    push normalmente entra directo. Si el remoto se movió durante la corrida
+    se rebasea una vez y se reintenta; --autostash porque a esta altura el
+    árbol tiene macro_etf_dashboard.html recién reescrito y sin commitear, y
+    un rebase sin autostash se niega a correr con cambios sin stagear."""
+    def fail(label, r):
+        print(f"  ⚠ Git error during '{label}' (exit {r.returncode}): {_git_err(r)}")
+
+    r = _git(repo_dir, "add", *PUBLISH_PATHS)
+    if r.returncode != 0:
+        fail("git add", r)
+        return False
+    # Anything actually staged? If not, skip the commit but still push (a
+    # previous run may have committed without managing to push).
+    staged = _git(repo_dir, "diff", "--cached", "--quiet", "--", *PUBLISH_PATHS)
+    if staged.returncode == 0:
+        print("  Nothing changed in index.html/snapshots — skipping commit.")
+    else:
+        r = _git(repo_dir, "commit", "-m", commit_msg)
+        if r.returncode != 0:
+            fail("git commit", r)
+            return False
+
+    r = _git(repo_dir, "push", PUBLISH_REMOTE, PUBLISH_BRANCH)
+    if r.returncode != 0:
+        first_err = _git_err(r)
+        f = _git(repo_dir, "fetch", PUBLISH_REMOTE, PUBLISH_BRANCH)
+        if f.returncode != 0:
+            print(f"  ⚠ Git error during 'git push' (exit {r.returncode}): {first_err}")
+            return False
+        rb = _git(repo_dir, "rebase", "--autostash", "FETCH_HEAD")
+        if rb.returncode != 0:
+            err = _git_err(rb)
+            _git(repo_dir, "rebase", "--abort")
+            print(f"  ⚠ Push rejected ({first_err.splitlines()[-1] if first_err else 'no output'}) "
+                  f"and the rebase onto the remote failed: {err}")
+            print("    Nothing was published; the commit stays local.")
+            return False
+        r = _git(repo_dir, "push", PUBLISH_REMOTE, PUBLISH_BRANCH)
+        if r.returncode != 0:
+            fail("git push", r)
+            return False
+    msg = (r.stderr or r.stdout or "").strip().splitlines()
+    tail = msg[-1] if msg else ""
+    print("  ✓ Pushed → https://bullhaus-am.github.io/Matrix-dashboard/")
+    if tail and "up-to-date" in tail.lower():
+        print(f"    ({tail})")
+    return True
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 def _parse_args():
     import argparse
@@ -1863,6 +2035,25 @@ if __name__ == "__main__":
     else:
         run_macro = False
 
+    # ── Sync con GitHub ANTES de calcular ─────────────────────────────────────
+    # El estado del modelo (regime_history.json, snapshots/, insights/) vive en
+    # el repo y el runner cloud lo commitea a diario. Si no se pudo traer, el
+    # dashboard se genera igual pero no se publica.
+    repo_dir = Path(__file__).parent
+    can_publish = False
+    if args.no_push:
+        pass
+    elif shutil.which("git") is None:
+        print("⚠ Git not found — the dashboard will not be pushed to GitHub.")
+    else:
+        can_publish, sync_detail = sync_with_remote(repo_dir)
+        if can_publish:
+            print(f"Synced with {PUBLISH_REMOTE}/{PUBLISH_BRANCH}: {sync_detail}.")
+        else:
+            log.warning("Could not sync with %s/%s — %s", PUBLISH_REMOTE, PUBLISH_BRANCH, sync_detail)
+            log.warning("The dashboard will be generated from the local state and "
+                        "NOT pushed. Fix the checkout and re-run to publish.")
+
     # Download everything
     all_data = download_all()
 
@@ -1888,22 +2079,21 @@ if __name__ == "__main__":
 
     # Build 252-day trend history
     print("Building trend history...")
-    trend_history = build_trend_history(prices, 252)
+    dated_scores = trend_scores_by_date(prices, 252)
+    trend_history = format_trend_history(dated_scores)
     if not trend_history:
         log.warning("Trend history is EMPTY — the 252-day chart will render blank.")
 
     # ── Persistent regime history — correct hysteresis over full score series ──
-    import json as _json2
-    saved_history = load_regime_history()
-
-    # Add today's score (keyed by data_date to avoid duplicates)
-    today_entry = {"date": data_date, "score": trend_score_val}
-    if not saved_history or saved_history[-1]["date"] != data_date:
-        saved_history.append(today_entry)
-    else:
-        # Re-run on the same session: refresh the score (later runs may have
-        # healed data that the earlier run was missing).
-        saved_history[-1]["score"] = trend_score_val
+    # Una entrada por sesión: hoy se agrega (o se refresca si es una re-corrida)
+    # y las sesiones que falten se rellenan con el score recomputado, para que
+    # la histéresis cuente sesiones y no corridas.
+    saved_history, backfilled = merge_regime_history(
+        load_regime_history(), data_date, trend_score_val, dated_scores)
+    if backfilled:
+        log.warning("Regime history: backfilled %d missing session(s) with the "
+                    "recomputed Trend Score: %s", len(backfilled),
+                    ", ".join(d.isoformat() for d in backfilled))
 
     # Recalculate regime for every entry using full series (correct hysteresis)
     full_scores = [e["score"] for e in saved_history]
@@ -1912,10 +2102,14 @@ if __name__ == "__main__":
         entry["regime"] = r
     save_regime_history(saved_history)
 
-    # Final regime = last entry
-    regime = saved_history[-1]["regime"]
+    # Regime as of this session (normalmente la última entrada; si Yahoo sirvió
+    # datos viejos y el historial ya tiene sesiones posteriores, se informa el
+    # régimen de la sesión que se está mostrando, no el de una posterior)
+    today_d = _regime_date(data_date)
+    today_idx = next(i for i, e in enumerate(saved_history) if _regime_date(e["date"]) == today_d)
+    regime = saved_history[today_idx]["regime"]
     real_regime_days = 0
-    for entry in reversed(saved_history):
+    for entry in reversed(saved_history[:today_idx + 1]):
         if entry["regime"] == regime:
             real_regime_days += 1
         else:
@@ -1984,75 +2178,17 @@ if __name__ == "__main__":
     print(f"\n✓ Dashboard saved → {OUTPUT_FILE}")
 
     # ── Push to GitHub Pages ───────────────────────────────────────────────────
-    import subprocess, shutil
-
     if args.no_push:
         print("\n--no-push: skipping GitHub push.")
-    elif shutil.which("git") is None:
-        print("⚠ Git not found — skipping GitHub push.")
+    elif not can_publish:
+        print("\n⚠ Not pushed to GitHub (see the sync warning above); "
+              "index.html was left untouched.")
     else:
         print("\nPushing to GitHub...")
-        repo_dir = Path(__file__).parent
-
         # Copy dashboard as index.html for GitHub Pages
-        index_path = repo_dir / "index.html"
-        import shutil as _sh
-        _sh.copy(OUTPUT_FILE, index_path)
-
+        shutil.copy(OUTPUT_FILE, repo_dir / "index.html")
         commit_msg = (
             f"dashboard {date_str} · {regime} d{regime_days} "
             f"· trend {int(trend_score_val * 100)}% · matrix {matrix_score:+d}"
         )
-
-        # Force English locale for deterministic git messages, and capture
-        # both stdout AND stderr so "nothing to commit" detection is reliable
-        # even on Spanish/Portuguese/etc. localised git installs.
-        git_env = {**os.environ, "LC_ALL": "C", "LANG": "C", "LANGUAGE": "C"}
-
-        def run_git(args):
-            return subprocess.run(
-                ["git", "-C", str(repo_dir), *args],
-                capture_output=True, text=True, env=git_env,
-            )
-
-        def fail(label, r):
-            err = (r.stderr or "").strip() or (r.stdout or "").strip() or f"(no output, exit {r.returncode})"
-            print(f"  ⚠ Git error during '{label}' (exit {r.returncode}): {err}")
-
-        # 1. Stage (dashboard + the day's research snapshot + regime history —
-        #    este último es ESTADO del modelo (histéresis sobre la serie
-        #    completa): el runner cloud lo necesita persistido entre corridas)
-        #    insights/ lleva la nota macro del día (json/md/html): el runner
-        #    cloud la necesita para la continuidad entre notas.
-        r = run_git(["add", "index.html", SNAPSHOT_DIR, "regime_history.json", "insights"])
-        if r.returncode != 0:
-            fail("git add", r)
-        else:
-            # 2. Anything actually staged? If not, skip commit but still try push
-            #    (in case a previous commit didn't push).
-            staged = run_git(["diff", "--cached", "--quiet", "--",
-                              "index.html", SNAPSHOT_DIR, "regime_history.json", "insights"])
-            if staged.returncode == 0:
-                print("  Nothing changed in index.html/snapshots — skipping commit.")
-            else:
-                r = run_git(["commit", "-m", commit_msg])
-                if r.returncode != 0:
-                    fail("git commit", r)
-                    r = None  # don't push if commit failed
-            # 3. Rebase + push (always attempt — there may be earlier unpushed
-            #    commits). El rebase es necesario desde que el workflow cloud
-            #    (daily-matrix en GitHub Actions) también commitea a main a
-            #    diario: sin él, la corrida local quedaría non-fast-forward.
-            r = run_git(["pull", "--rebase", "origin", "main"])
-            if r.returncode != 0:
-                fail("git pull --rebase", r)
-            r = run_git(["push", "origin", "main"])
-            if r.returncode != 0:
-                # "Everything up-to-date" is exit 0, so any non-zero is real
-                fail("git push", r)
-            else:
-                msg = (r.stderr or r.stdout or "").strip().splitlines()
-                tail = msg[-1] if msg else ""
-                print(f"  ✓ Pushed → https://bullhaus-am.github.io/Matrix-dashboard/")
-                if tail and "up-to-date" in tail.lower():
-                    print(f"    ({tail})")
+        publish(repo_dir, commit_msg)
