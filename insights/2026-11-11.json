@@ -1,0 +1,167 @@
+{
+ "session": "2026-11-11",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 67.1,
+  "usage": {
+   "input_tokens": 34028,
+   "output_tokens": 6509,
+   "cache_creation_input_tokens": 4718,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.2899
+  },
+  "generated_at": "2026-11-12T04:42:35",
+  "source": "api"
+ },
+ "output": {
+  "headline": "Bonds día 8: IVV recupera su MA100 y el Trend sube de 30% a 50%, pero el salto es del índice y de los pares contra oro y commodities; los pares de riesgo siguen sin acompañar y el semáforo sigue en 0.5x.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "yellow",
+   "size_multiplier": "0.5x",
+   "tilt_long": [
+    "XLV",
+    "IBB",
+    "IHE",
+    "IHI",
+    "XLP",
+    "SPLV"
+   ],
+   "tilt_avoid": [
+    "FFTY",
+    "ARKK",
+    "SOXX",
+    "XLK",
+    "IYW",
+    "QQQ",
+    "EEM",
+    "ARGT",
+    "SLV",
+    "IEO",
+    "XLE"
+   ],
+   "rationale": "Hay dos señales en contra de los riesgosos. FFTY/IVV lleva 88 sesiones Bearish y ARKK/IVV 8. QQQ muestra distribución (net20 -3, m1 -7,2%). A favor, QQQJ/QQQ sigue Bullish y Small vs Large está Neutral en 34. El crédito mejora sin confirmar: HYG/IEI subió de 18 a 41 en la banda, todavía bajo la MA100. No hay countdown hacia Stocks (0 sesiones ≥70%). La amplitud sectorial es buena (73% de SPDR sobre SMA50), pero el liderazgo con acumulación es defensivo: IBB net20 4, XLV net20 2, XLP net50 4. IVV tiene atr_ratio 1,58, volatilidad en expansión, otra razón para no ir a 1x. No da para red: los pares de riesgo no se derrumban y el crédito sube. Tampoco da para green: los dos pares de alto beta siguen Bearish."
+  },
+  "regime_read": "Bonds día 8 de un promedio de 68 para regímenes Bonds (12% del ciclo), con 27 sesiones bajo 70% y ninguna sesión válida hacia Stocks, así que el flip más temprano es dentro de 20 sesiones desde el primer día ≥70%. Para llegar a 70% faltan dos puntos. Los más cercanos son HYG/IEI, a unos 0,3% de su MA100 (banda 41), y Small vs Large, a unos 0,5% (banda 34). IVV/GSG queda a unos 0,8% (banda 23) y RSPD/RSPS se aleja (banda 17). Los 5 análogos son matches débiles (distancia 5,8 a 6,9) y todos estaban en Stocks: IVV a 20 sesiones tuvo mediana de -0,7% y solo 40% positivos, contra TLT con mediana de +3,2%. El peor caso fue 2012-05-09, con drawdown de -5,6%. La base rate no favorece apurar un cambio de régimen.",
+  "insights": [
+   {
+    "title": "IVV vuelve sobre la MA100, pero el rebote es del índice, no de los riesgosos",
+    "thesis": "Los dos puntos que suben el Trend a 50% salen de un solo componente, IVV vs MA100. Ayer había caído y hoy volvió, y S&P Momentum pasó a 54 en la banda. Debajo del índice nada cambió. ILCG-ILCV está en -9,6% a un mes, Growth vs Value lleva 21 sesiones Bearish y MTUM está en -7,95% contra su SMA50. Que IVV cotice apenas +0,19% sobre su EMA20 con ATR en expansión deja este punto expuesto a perderse de nuevo. La tesis de ayer cambia en parte: el índice recuperó tracción, la participación de growth no.",
+    "evidence": [
+     "IVV vs MA100: 0 pts el 2026-11-10, 2 pts hoy; Trend 30% → 50%",
+     "S&P Momentum band 54, Neutral 3 sesiones",
+     "QQQ net20 -3, net50 -4, vs_sma50 -3,96%",
+     "IMCG/IMCV Bearish 21 sesiones; ILCG-ILCV m1 -9,6",
+     "IVV atr_ratio 1,58, vs_ema20 +0,19%"
+    ],
+    "instruments": [
+     {
+      "ticker": "QQQ",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Distribución y Growth vs Value Bearish: no comprar breakouts de tech grande."
+     },
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Si pierde de nuevo la MA100, el Trend vuelve a 30%."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "La tesis cae si IMCG/IMCV vuelve a Neutral y QQQ arma net20 positivo mientras IVV sostiene la MA100.",
+    "status": "changed"
+   },
+   {
+    "title": "La mejora de la Matrix viene de los denominadores: oro y commodities cayendo",
+    "thesis": "Sigue en pie: la Matrix pasó de -9 a -3 en cinco sesiones, sobre todo por pares contra oro y commodities. Hoy IVV/GSG pasa de Bearish a Neutral (banda 23) porque GSG cae 8,0% en el mes. CPER/GLD (93, cerca del borde Bullish) y IVV/GLD Bullish reflejan debilidad del oro (m1 -4,3%), no demanda cíclica. El cobre mismo tiene net50 -4. Es desinflación de commodities, compatible con Bonds y con TLT +3,7% en el mes. No es reflación de riesgo.",
+    "evidence": [
+     "IVV/GSG Bearish → Neutral hoy, band 23",
+     "CPER/GLD band 93, edge_flag near Bullish edge; CPER net50 -4",
+     "GLD m1 -4,32, net50 -3; SLV net50 -8",
+     "GSG m1 -8,02, vs_sma50 -6,06",
+     "TLT-SHY m1 +3,23"
+    ],
+    "instruments": [
+     {
+      "ticker": "IEO",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Rank 3 por cx, pero está -4,2% bajo la SMA50 y el momentum ya se está dando vuelta."
+     },
+     {
+      "ticker": "SLV",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "net50 -8, SLV/GLD Bearish 36 sesiones."
+     },
+     {
+      "ticker": "CPER",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Si CPER/GLD pasa a Bullish con CPER cayendo, es lectura de oro débil: no comprar cobre por esa señal."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "La tesis cae si GLD recupera su SMA50 y aun así IVV/GLD y CPER/GLD se sostienen.",
+    "status": "continuing"
+   },
+   {
+    "title": "Salud y staples: el liderazgo con acumulación sigue en pie",
+    "thesis": "Sigue en pie porque es el único bloque con trend y acumulación a la vez. XLV está en rank 7 con net20 2, IBB tiene net20 4 e IHE es mom_rank 1. XLP sube 52 posiciones en 30 días con net50 4. Que RSPD/RSPS haya caído de 62 a 17 en la banda en cinco sesiones confirma la rotación hacia staples dentro del consumo.",
+    "evidence": [
+     "XLV cx 0,33, vs_sma50 +8,42, net20 2",
+     "IBB rank 10, net20 4",
+     "XLP climb30 52, net50 4",
+     "RSPD/RSPS band 62 → 17 en 5 sesiones",
+     "SPLV net20 2, vs_sma50 +5,9"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLV",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Comprar pullbacks hacia la EMA20, a 0.5x. Está +8,4% sobre la SMA50, así que no perseguir."
+     },
+     {
+      "ticker": "IBB",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Tiene la mejor acumulación del bloque."
+     },
+     {
+      "ticker": "XLP",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Coherente con el régimen Bonds."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "La tesis cae si XLV o IBB pasan a net20 negativo, o si RSPD/RSPS vuelve sobre 50 con IMCG/IMCV saliendo de Bearish.",
+    "status": "continuing"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "High Yield vs Treasuries (HYG/IEI)",
+    "current": "Neutral, band 41 (era 18 hace 5 sesiones); componente del Trend en 0",
+    "trigger": "Cruce de la MA100 (band >50, unos +0,3%) suma 1 punto y lleva el Trend a 60%. Volver bajo 15 la pone al borde de Bearish.",
+    "implication": "Si cruza hacia arriba y Small vs Large (34) lo sigue, el Trend llega a 70% y arranca el conteo: mantener 0.5x hasta ver 5 sesiones del conteo. Si se pierde hacia 15, pasar a 0 en breakouts de beta."
+   }
+  ],
+  "contradictions": [
+   "La Matrix mejora (de -9 a -3 en 5 sesiones, 3 flips hoy y ayer) mientras los pares de riesgo no se mueven: FFTY/IVV lleva 88 sesiones Bearish y ARKK/IVV 8. Confío en los pares de riesgo y en la acumulación. La mejora de la Matrix sale de oro y commodities cayendo, no de compradores en growth, y FFTY con mom_rank 128 es el termómetro directo de breakouts."
+  ],
+  "blind_spots": "El rally de duration (TLT +3,7% en el mes) que sostiene la recuperación de HYG/IEI y la lectura Bonds depende del camino de tasas, y un dato de inflación o un cambio de tono de la Fed lo puede dar vuelta sin que el modelo lo anticipe.",
+  "changes_vs_previous": "Cambió el Trend, de 30% a 50%, porque IVV volvió sobre la MA100 y S&P Momentum pasó del borde Bearish a 54 en la banda. IVV/GSG pasó de Bearish a Neutral y la Matrix de -4 a -3. HYG/IEI siguió mejorando (41). RSPD/RSPS se acerca al borde Bearish (17). No cambió el régimen (Bonds día 8, sin conteo), ni el semáforo (yellow 0.5x), ni el liderazgo defensivo.",
+  "dashboard_one_liner": "Bonds d8 · Trend 50% (IVV sobre MA100) · Matrix -3 por oro/commodities débiles · FFTY/ARKK Bearish · HYG/IEI 41 es el gatillo · Breakouts 0.5x, tilt salud/staples"
+ }
+}
