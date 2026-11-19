@@ -1,0 +1,165 @@
+{
+ "session": "2026-11-18",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 55.5,
+  "usage": {
+   "input_tokens": 34311,
+   "output_tokens": 5881,
+   "cache_creation_input_tokens": 4718,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.2785
+  },
+  "generated_at": "2026-11-19T04:42:10",
+  "source": "api"
+ },
+ "output": {
+  "headline": "QQQJ/QQQ pierde el Bullish y CPER/GLD se va a Bearish el mismo día: el Trend sube a 40% solo porque el Nasdaq grande cae más rápido que el resto, y el crédito (HYG/IEI en 13) sigue pegado al borde Bearish.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "yellow",
+   "size_multiplier": "0.5x",
+   "tilt_long": [
+    "XLP",
+    "RSPS",
+    "IHE",
+    "SPLV",
+    "IHI"
+   ],
+   "tilt_avoid": [
+    "FFTY",
+    "ARKK",
+    "SOXX",
+    "IGV",
+    "XLK",
+    "SLV",
+    "GDX",
+    "CPER",
+    "GBTC",
+    "ETHE",
+    "EEM",
+    "ARGT"
+   ],
+   "rationale": "Amarillo, sin margen. FFTY/IVV está Bearish hace 93 sesiones y ARKK/IVV hace 13. QQQJ/QQQ bajó a Neutral en 98 y Small vs Large está Neutral en 71: no hay ningún par de riesgo Bullish. El crédito no confirma: HYG/IEI cayó a 13 desde 41 hace 5 sesiones, pero todavía no está Bearish. La amplitud es mínima: 27% de sectores SPDR y 7% de Style sobre EMA20. No corre ninguna cuenta regresiva hacia Stocks. El rojo no se activa solo porque el crédito aún no rompió. Breakouts solo en defensivos con acumulación: XLP net50 4 / net20 2, RSPS net20 2, IHE mom_rank 1, SPLV net20 2, IHI net20 2 con vs_sma50 5.55."
+  },
+  "regime_read": "Bonds día 13 contra un promedio de 70 sesiones para Bonds (19%); llevamos 32 sesiones bajo 70% y 0 en o sobre el umbral, así que no hay cuenta regresiva a Stocks. Para volver a 70% faltan 3 puntos: IVV/GSG está a ~0.1% de su MA100 (46 de banda), HYG/IEI a ~1.1% (13) y IVV vs MA100 (2 puntos) está debajo de la banda con vs_sma50 en -4.2. Aun completándolos mañana, el flip llegaría 20 sesiones después, ya en diciembre. Los análogos coinciden: 4 de 5 están en Bonds y ninguno flipeó en 20 sesiones. La mediana de IVV a 20 sesiones es +2.57% (80% positivos), pero el más cercano, 2008-08-27, dio -5.34% con un drawdown de -9.49%.",
+  "insights": [
+   {
+    "title": "Crédito al borde: HYG/IEI en 13, la bisagra entre amarillo y rojo",
+    "thesis": "Sigue en pie y se profundiza: la banda pasó de 15 ayer a 13 hoy, y de 41 hace 5 sesiones. HYG pierde contra duración sin pánico: HYG-IEF m1 -0.52 y HYG vs_sma50 -0.5. Si cruza a Bearish, el único Trend component que podía sumar sin depender de IVV queda más lejos, y el semáforo pasa a rojo. GHYG y EMHY (vs_sma50 -1.09 y -0.84) ya muestran el deterioro fuera de EE.UU.",
+    "evidence": [
+     "HYG/IEI Neutral, band 13 (41 hace 5 sesiones), edge_flag near Bearish edge",
+     "HYG-IEF m1 -0.52, m3 -0.71",
+     "HYG vs_sma50 -0.5, rank 81",
+     "GHYG vs_sma50 -1.09"
+    ],
+    "instruments": [
+     {
+      "ticker": "HYG",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "No agregar high yield mientras la banda esté bajo 50."
+     },
+     {
+      "ticker": "SHV",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Refugio de caja: rank 18, climb30 +24."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "HYG/IEI vuelve sobre 50 de banda, es decir, sobre su MA100, y suma el punto de Trend.",
+    "status": "continuing"
+   },
+   {
+    "title": "Liquidación de reales: cobre, oro, plata, cripto y EM caen juntos",
+    "thesis": "CPER/GLD pasó de 93 a Bearish en 5 sesiones con el oro también cayendo (GLD m1 -9.65). El cobre cae más: CPER m1 -14.21 con atr_ratio 1.351. IVV/GSG volvió a Neutral solo porque GSG (m1 -11.96) cae más que IVV (m1 -5.03), y IVV/GLD Bullish tiene el mismo origen. No es fortaleza de acciones, es desinflación de todo lo que cotiza contra el dólar. TIP-IEF m1 -1.21 y TLT subiendo 53 posiciones lo confirman. Cambio respecto de ayer: el punto de IVV/GSG puede volver, pero sería un punto de mala calidad.",
+    "evidence": [
+     "CPER/GLD Bearish hoy, band 93 hace 5 sesiones",
+     "GSG m1 -11.96, IVV/GSG Neutral band 46",
+     "SLV net50 -12, GDX net5 -3",
+     "TIP-IEF m1 -1.21",
+     "GBTC m1 -24.35, ETHE m1 -28.24"
+    ],
+    "instruments": [
+     {
+      "ticker": "CPER",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Expansión de volatilidad bajista."
+     },
+     {
+      "ticker": "SLV",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "La peor distribución del universo, net50 -12."
+     },
+     {
+      "ticker": "TLT",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "vs_sma50 0.62 y climb30 +53; entrada solo si IVV/TLT sigue Bearish y el crédito cae."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "CPER/GLD vuelve a Neutral, o GSG recupera su EMA20 (hoy -6.02).",
+    "status": "changed"
+   },
+   {
+    "title": "Defensivos con acumulación: sigue en pie",
+    "thesis": "Sigue en pie porque siguen siendo los únicos con net20 positivo y precio sobre la SMA50 mientras el resto distribuye. XLP: rank 14, climb30 +63, vs_sma50 5.97. RSPS: net20 2. IHE: mom_rank 1. XLV sigue en rank 1, pero con net5 -1 y bajo la EMA20 (-1.47) no da para un breakout hoy.",
+    "evidence": [
+     "XLP net50 4, net20 2",
+     "RSPS climb30 +54",
+     "SPLV climb30 +57, net20 2",
+     "XLV vs_ema20 -1.47, net5 -1"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLP",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "0.5x, breakout sobre máximos con volumen."
+     },
+     {
+      "ticker": "IHE",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "0.5x, mom_rank 1."
+     },
+     {
+      "ticker": "XLV",
+      "direction": "watch",
+      "horizon": "days",
+      "note": "Entrar solo si recupera la EMA20."
+     }
+    ],
+    "conviction": "high",
+    "invalidation": "XLP pierde la EMA20 con net5 negativo, o RSPD/RSPS sale de Bearish (rotación a cíclicos).",
+    "status": "continuing"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "High Yield vs Treasuries (HYG/IEI)",
+    "current": "Neutral, band 13 (15 ayer)",
+    "trigger": "Banda en 0, es decir, pasa a Bearish",
+    "implication": "Semáforo a rojo: 0 breakouts nuevos, ajustar stops en las posiciones defensivas y priorizar SHV/IEI."
+   }
+  ],
+  "contradictions": [
+   "Small vs Large (de 34 a 71) y QQQJ/QQQ (98) parecen apetito de riesgo, pero miden la caída del denominador: QQQ m1 -8.1, XLK -11.66, ILCG-ILCV m1 -6.82, mientras IWC está en vs_sma50 -7.74 y ARKK con net20 -4. Confío en FFTY/IVV y ARKK/IVV Bearish: el +20 del Trend es rotación fuera del mega cap, no risk-on."
+  ],
+  "blind_spots": "La caída simultánea de oro, cobre, plata, cripto y EM huele a dólar fuerte o a liquidez apretándose, y el modelo no ve FX ni tasas reales: es la lectura más expuesta, porque IVV/GLD Bullish e IVV/GSG Neutral dependen de eso.",
+  "changes_vs_previous": "Matrix pasa de -7 a -8. QQQJ/QQQ cae de Bullish a Neutral y CPER/GLD de Neutral a Bearish. IVV/GSG vuelve a Neutral (46) desde Bearish. El Trend sube de 20% a 40% porque Small vs Large y RSPD/IDU recuperan su MA100. HYG/IEI baja de 15 a 13. Semáforo amarillo sin cambios.",
+  "dashboard_one_liner": "Bonds d13/70. Trend 40% por caída del mega cap, no risk-on. HYG/IEI en 13 al borde Bearish. Amarillo 0.5x solo defensivos (XLP, RSPS, IHE). Si HYG/IEI cruza, rojo."
+ }
+}
