@@ -284,3 +284,100 @@ def test_trend_score_survives_one_short_ticker():
     hist = gd.build_trend_history(prices, 252)
     assert len(hist) == 252
     assert all(h["s"] > 0 for h in hist)
+
+
+# ── Net 1D · Vol Ratio · % off 52W High (2026-11-24) ─────────────────────────
+def test_acc_dist_includes_the_last_session_as_net_1():
+    n = 120
+    closes = np.full(n, 100.0)
+    volumes = np.full(n, 1_000_000.0)
+    closes[-1] = 103.0                 # +3% …
+    volumes[-1] = 3_000_000.0          # … con volumen > ayer ×1.1 y > SMA50
+    out = gd.compute_acc_dist(_make_df(closes, volumes=volumes))
+    assert (out["acc_1"], out["dist_1"], out["net_1"]) == (1, 0, 1)
+    assert out["net_5"] == 1 and out["net_50"] == 1
+
+    closes[-1] = 97.0                  # la misma rueda, pero para abajo
+    out = gd.compute_acc_dist(_make_df(closes, volumes=volumes))
+    assert out["net_1"] == -1
+
+    volumes[-1] = 1_000_000.0          # sin volumen no cuenta
+    assert gd.compute_acc_dist(_make_df(closes, volumes=volumes))["net_1"] == 0
+
+
+def test_vol_ratio_is_last_volume_over_its_50d_average():
+    flat = _make_df(np.full(120, 100.0))
+    assert gd.compute_vol_ratio(flat) == 100.0
+    volumes = np.full(120, 1_000_000.0)
+    volumes[-1] = 2_000_000.0          # SMA50 incluye la última: 2 / 1.02
+    assert gd.compute_vol_ratio(_make_df(np.full(120, 100.0), volumes=volumes)) == 196.1
+    assert gd.compute_vol_ratio(_make_df(np.full(30, 100.0))) is None          # sin 50 ruedas
+    assert gd.compute_vol_ratio(_make_df(np.full(120, 100.0), volumes=np.zeros(120))) is None
+
+
+def test_off_52w_high_measures_close_against_the_252_bar_high():
+    closes = np.full(300, 100.0)
+    df = _make_df(closes, highs=closes.copy())                # high = close → en máximos
+    assert gd.compute_off_52w_high(df) == 0.0
+
+    closes = np.full(300, 100.0); highs = closes.copy()
+    highs[-100] = 125.0                                        # máximo de hace 100 ruedas
+    assert gd.compute_off_52w_high(_make_df(closes, highs=highs)) == -20.0
+
+    highs = closes.copy(); highs[10] = 200.0                   # fuera de las últimas 252
+    assert gd.compute_off_52w_high(_make_df(closes, highs=highs)) == 0.0
+
+    assert gd.compute_off_52w_high(_make_df(np.full(200, 100.0))) is None      # menos de un año
+
+
+def _table_fixture_html():
+    rng = np.random.default_rng(7)
+    results = []
+    for i, (t, name, cat) in enumerate([("AAA", "Alpha", "Style"), ("BBB", "Beta", "Style"),
+                                        ("CCC", "Gamma", "Fixed Income")]):
+        closes = 100 * np.exp(np.cumsum(rng.normal(0.0004 * (i + 1), 0.01, 400)))
+        df = _make_df(closes, volumes=rng.uniform(5e5, 2e6, 400))
+        results.append(gd.analyze(t, name, cat, df))
+    ranked = gd.add_ranks(results)
+    matrix = [{"n": d[0], "sig": "Neutral", "f": 0, "pct": 50} for d in gd.MATRIX_DEFS]
+    return ranked, gd.generate_html(ranked, matrix, 0.5, [{"d": "Nov 20", "s": 0.5}],
+                                    "Bonds", 3, "Nov 24, 2026", data_date="Nov 23, 2026")
+
+
+def test_analyze_exports_the_new_columns_to_the_snapshot_and_the_table():
+    ranked, html = _table_fixture_html()
+    for r in ranked:
+        assert r["net_1"] in (-1, 0, 1)
+        assert r["vol_ratio"] > 0
+        assert r["off_52w_high"] <= 0
+    assert '"n1":' in html and '"vr":' in html and '"h52":' in html
+
+
+def test_etf_table_structure_is_consistent():
+    """Encabezados, claves de orden, celdas por fila, colspans de grupo y la fila
+    de Favorites tienen que describir la MISMA cantidad de columnas."""
+    import re
+    _, html = _table_fixture_html()
+    hdrs = re.search(r"const hdrs=\[(.*?)\];", html, re.S).group(1)
+    headers = re.findall(r"'([^']*)'", hdrs)
+    keys = re.search(r"const keys=\[(.*?)\];", html, re.S).group(1).split(",")
+    ncols = int(re.search(r"const NCOLS=(\d+);", html).group(1))
+    grp = re.search(r'<tr class="tbl-group-row">(.*?)</tr>', html, re.S).group(1)
+    spans = [int(x) for x in re.findall(r'<th colspan="(\d+)"', grp)]
+    row = re.search(r"function rowHtml\(e,cls\)\{.*?return`<tr class=\"\$\{cls\}\">(.*?)</tr>`;", html, re.S).group(1)
+    n_cells = len(re.findall(r"<td[ >]", row))
+
+    assert len(headers) == len(keys) == ncols == sum(spans) == n_cells == 30
+    labels = [h.replace("<br>", " ") for h in headers]
+    assert labels[10:13] == ["Net 5D", "Net 1D", "Net Close 5D"]
+    assert labels[14] == "ATR% 5D" and "ATR 5%" not in labels
+    assert labels[18:20] == ["Vol Ratio", "Perf 1D"]
+    assert labels[22:25] == ["Annual", "% Off 52W High", "Operable"]
+    assert [k.strip().strip("'") for k in keys][11] == "n1"
+    assert [k.strip().strip("'") for k in keys][18] == "vr"
+    assert [k.strip().strip("'") for k in keys][23] == "h52"
+    assert "Volume & Performance" in grp and ">Performance<" not in grp
+    # el separador de grupo cae en la primera columna de cada grupo
+    seps = [int(x) for x in re.search(r"const bl=\((.*?)\)\?", html).group(1).replace("ci===", "").split("||")]
+    starts = [sum(spans[:i]) for i in range(2, len(spans))]      # desde Momentum Ranking
+    assert seps == starts

@@ -81,8 +81,10 @@ A `.env` file in this folder is auto-loaded.
   not runs. Saved point-in-time scores are never overwritten.
 - **Matrix** — 17 ETF-pair ratios vs MA100 ±1.5% band → Bullish / Neutral / Bearish.
 - **ETF table** — per-category ranking by exponential-regression momentum, with
-  accumulation/distribution counts (50/20/5 day), ATR, distance from EMA20/SMA50,
-  and 1d/1m/3m/annual returns.
+  accumulation/distribution counts (50/20/5/1 day), ATR, distance from EMA20/SMA50,
+  volume ratio (last session vs its 50-day average), 1d/1m/3m/annual returns and
+  the distance to the 52-week high. Column headers break into two lines so the
+  30 columns fit the page width.
 - **Macro Insights** (optional) — Claude's daily / weekly inter-market note on
   the model (see the next section). The older "AI Analysis" card (a 5-section
   ETF-picking commentary) was removed on 2026-10-22.

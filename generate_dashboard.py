@@ -24,6 +24,7 @@ ACC_THRESHOLD  =  1.5   # % up → accumulation day
 DIST_THRESHOLD = -1.5   # % down → distribution day
 VOL_MULT       =  1.10  # volume > prev_day × this
 VOL_MA_LEN     =  50    # volume SMA period
+HIGH_52W       =  252   # bars in the 52-week-high lookback (% off 52W High)
 SLOPE_WINDOW   =  91    # bars for exponential regression
 MATRIX_BAND    =  0.015 # ±1.5% of MA100 for Neutral zone
 MOM_LOOKBACK   =  30    # bars back for the Momentum Ranking 30D variation
@@ -319,11 +320,33 @@ def compute_acc_dist(df: pd.DataFrame) -> dict:
     is_dist = (pchg <= DIST_THRESHOLD) & vi & va
     acc = is_acc.astype(int); dist = is_dist.astype(int)
     result = {}
-    for w in (50, 20, 5):
+    for w in (50, 20, 5, 1):    # w=1 → solo la última sesión (Net 1D: +1 / 0 / −1)
         a = int(acc.rolling(w,  min_periods=1).sum().iloc[-1])
         d = int(dist.rolling(w, min_periods=1).sum().iloc[-1])
         result[f"acc_{w}"] = a; result[f"dist_{w}"] = d; result[f"net_{w}"] = a - d
     return result
+
+def compute_vol_ratio(df: pd.DataFrame) -> float | None:
+    """Vol Ratio — volumen de la última sesión como % de su media de
+    VOL_MA_LEN ruedas (100 = volumen promedio). Misma definición que el modelo
+    de Scoring ("Volume Ratio (%)" = v / SMA50(v) × 100)."""
+    v = df["volume"]
+    sma = v.rolling(VOL_MA_LEN).mean().iloc[-1]
+    if pd.isna(sma) or sma <= 0:
+        return None
+    return round(float(v.iloc[-1] / sma * 100), 1)
+
+def compute_off_52w_high(df: pd.DataFrame) -> float | None:
+    """% off 52W High — distancia del cierre al máximo de HIGH_52W ruedas:
+    0 = en máximos, siempre ≤ 0. Misma definición que el modelo de Scoring
+    (Dist_52W_High = (close − max(high, 252)) / max(high, 252) × 100).
+    None si no hay un año de historia."""
+    if len(df) < HIGH_52W:
+        return None
+    hi = df["high"].iloc[-HIGH_52W:].max()
+    if pd.isna(hi) or hi <= 0:
+        return None
+    return round(float((df["close"].iloc[-1] / hi - 1) * 100), 2)
 
 def perf(close: pd.Series, days: int) -> float:
     if len(close) <= days: return 0.0
@@ -496,6 +519,8 @@ def analyze(ticker, name, cat, df) -> dict | None:
         "atr5_pct": atr5_pct,
         "atr_ratio": atr_ratio,
         "net_close": net_close,
+        "vol_ratio": compute_vol_ratio(df),
+        "off_52w_high": compute_off_52w_high(df),
         "mom": mom, "mom30": mom30,
         **ad,
     }
@@ -1090,8 +1115,9 @@ def generate_html(results, matrix, trend_score_val, trend_history,
             "eg":eg,"ag":ag,
             "mr":mr or 0,"mr30":r.get("mom_rank_30") or 0,
             "mclimb":r.get("mom_climb",0),"mg":mg,
-            "n50":r["net_50"],"n20":r["net_20"],"n5":r["net_5"],
+            "n50":r["net_50"],"n20":r["net_20"],"n5":r["net_5"],"n1":r.get("net_1",0),
             "nc":r.get("net_close",0),
+            "vr":r.get("vol_ratio"),"h52":r.get("off_52w_high"),
             "e20":e20,"s50":s50,
             "atr5":atr5,"atrr":atrr,
             "op":operable,"vo":volat_ok,"nx":not_extended,
@@ -1259,7 +1285,7 @@ body{{background:var(--bg);color:var(--smoke);font-family:var(--font);font-size:
 .cat-panel.on::-webkit-scrollbar-track{{background:transparent}}
 .cat-panel.on::-webkit-scrollbar-thumb{{background:var(--rule2);border-radius:4px}}
 table.etf{{width:100%;border-collapse:collapse}}
-table.etf th{{padding:8px 4px;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mist);text-align:left;background:var(--bg3);border-bottom:1px solid var(--rule);white-space:nowrap}}
+table.etf th{{padding:8px 4px;font-size:9.5px;letter-spacing:.6px;line-height:1.35;vertical-align:bottom;text-transform:uppercase;color:var(--mist);text-align:left;background:var(--bg3);border-bottom:1px solid var(--rule);white-space:nowrap}}
 table.etf thead tr.tbl-group-row th{{padding:7px 4px;font-size:9px;border-bottom:none}}
 table.etf th.r{{text-align:right}}
 table.etf th[onclick]{{cursor:pointer;user-select:none}}
@@ -1603,7 +1629,7 @@ document.getElementById('springsGrid').innerHTML=SPRINGS.map((s,i)=>{{
 // Los favoritos se fijan arriba de cada tab (sección colapsable) y además se
 // pueden filtrar con el toggle "★ Favs".
 const FAV_KEY='matrix_favorites';
-const NCOLS=27;   // = hdrs.length (colspan de las filas de la sección Favorites)
+const NCOLS=30;   // = hdrs.length (colspan de las filas de la sección Favorites)
 let WL_OPEN=true;
 function getFavs(){{try{{const v=JSON.parse(localStorage.getItem(FAV_KEY)||'[]');return Array.isArray(v)?v:[];}}catch(e){{return [];}}}}
 function saveFavs(a){{try{{localStorage.setItem(FAV_KEY,JSON.stringify(a));}}catch(e){{}}}}
@@ -1793,7 +1819,7 @@ function setDensity(mode){{
 
 // Category tabs
 function sortRows(d,col,dir){{
-  const keys=[null,'r','cx','climb','eg','mr','mclimb','mg','n50','n20','n5','nc','ag','atr5','atrr','e20','s50','d1','m1','m3','y','op','aum','vusd','pe',null,'er'];
+  const keys=[null,'r','cx','climb','eg','mr','mclimb','mg','n50','n20','n5','n1','nc','ag','atr5','atrr','e20','s50','vr','d1','m1','m3','y','h52','op','aum','vusd','pe',null,'er'];
   const k=keys[col];
   const INF_KEYS={{aum:1,vusd:1,pe:1,er:1}};
   const GRD_ORD={{'A+':6,A:5,B:4,C:3,D:2,E:1}};
@@ -1801,7 +1827,7 @@ function sortRows(d,col,dir){{
   else if(k==='ag'){{d.sort((a,b)=>dir==='asc'?(GRD_ORD[a.ag]||0)-(GRD_ORD[b.ag]||0):(GRD_ORD[b.ag]||0)-(GRD_ORD[a.ag]||0));}}
   else if(k==='mg'){{d.sort((a,b)=>dir==='asc'?(GRD_ORD[a.mg]||0)-(GRD_ORD[b.mg]||0):(GRD_ORD[b.mg]||0)-(GRD_ORD[a.mg]||0));}}
   else if(INF_KEYS[k]){{d.sort((a,b)=>{{const av=(ETF_INFO[a.tkr]||{{}})[k],bv=(ETF_INFO[b.tkr]||{{}})[k];const ax=(av==null)?-Infinity:av,bx=(bv==null)?-Infinity:bv;return dir==='asc'?ax-bx:bx-ax;}});}}
-  else if(k) d.sort((a,b)=>dir==='asc'?a[k]-b[k]:b[k]-a[k]);
+  else if(k) d.sort((a,b)=>{{const x=a[k]??-1e9,y=b[k]??-1e9;return dir==='asc'?x-y:y-x;}});
   return d;
 }}
 function buildRows(cat,col,dir){{
@@ -1832,6 +1858,7 @@ function rowHtml(e,cls){{
     const n50c=e.n50>0?'var(--teal)':e.n50<0?'var(--red)':'var(--smoke)';
     const n20c=e.n20>0?'var(--teal)':e.n20<0?'var(--red)':'var(--smoke)';
     const n5c=e.n5>0?'var(--teal)':e.n5<0?'var(--red)':'var(--smoke)';
+    const n1c=e.n1>0?'var(--teal)':e.n1<0?'var(--red)':'var(--smoke)';
     const ncc=e.nc>0?'var(--teal)':e.nc<0?'var(--red)':'var(--smoke)';
     const e20c=e.e20>0?'var(--teal)':e.e20<0?'var(--red)':'var(--smoke)';
     const s50c=e.s50>0?'var(--teal)':e.s50<0?'var(--red)':'var(--smoke)';
@@ -1851,16 +1878,19 @@ function rowHtml(e,cls){{
       <td class="r" style="${{mono}};color:${{n50c}};border-left:1px solid var(--rule2)">${{e.n50>0?'+':''}}${{e.n50}}</td>
       <td class="r" style="${{mono}};color:${{n20c}}">${{e.n20>0?'+':''}}${{e.n20}}</td>
       <td class="r" style="${{mono}};color:${{n5c}}">${{e.n5>0?'+':''}}${{e.n5}}</td>
+      <td class="r" style="${{mono}};color:${{n1c}}">${{e.n1>0?'+':''}}${{e.n1}}</td>
       <td class="r" style="${{mono}};color:${{ncc}}">${{e.nc>0?'+':''}}${{e.nc}}</td>
       <td class="r"><span class="${{gradeClass(e.ag)}}">${{e.ag}}</span></td>
       <td class="r" style="${{mono}};border-left:1px solid var(--rule2)">${{e.atr5}}%</td>
       <td class="r" style="${{mono}};color:${{atrrc}}">${{e.atrr.toFixed(2)}}</td>
       <td class="r" style="${{mono}};color:${{e20c}}">${{e.e20>0?'+':''}}${{e.e20}}%</td>
       <td class="r" style="${{mono}};color:${{s50c}}">${{e.s50>0?'+':''}}${{e.s50}}%</td>
-      <td class="r ${{d1c}}" style="border-left:1px solid var(--rule2)">${{(e.d1*100).toFixed(2)}}%</td>
+      <td class="r" style="border-left:1px solid var(--rule2)">${{e.vr==null?'—':e.vr.toFixed(0)+'%'}}</td>
+      <td class="r ${{d1c}}">${{(e.d1*100).toFixed(2)}}%</td>
       <td class="r ${{m1c}}">${{(e.m1*100).toFixed(1)}}%</td>
       <td class="r ${{m3c}}">${{(e.m3*100).toFixed(1)}}%</td>
       <td class="r ${{yc}}">${{(e.y*100).toFixed(1)}}%</td>
+      <td class="r">${{e.h52==null?'—':e.h52.toFixed(1)+'%'}}</td>
       <td class="r"><span class="op ${{e.op?'op-yes':'op-no'}}">${{e.op?'YES':'NO'}}</span></td>
       <td class="r" style="${{mono}};border-left:1px solid var(--rule2)">${{fmtBig(inf.aum)}}</td>
       <td class="r" style="${{mono}}">${{fmtBig(inf.vusd)}}</td>
@@ -1885,19 +1915,21 @@ function sortTable(pid,cat,col){{
     <th colspan="2" style="background:var(--bg3)"></th>
     <th colspan="3" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid rgba(0,229,204,.12)">Exp. Regression</th>
     <th colspan="3" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Momentum Ranking</th>
-    <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Accumulation / Distribution</th>
+    <th colspan="6" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Accumulation / Distribution</th>
     <th colspan="4" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Volatility & Moving Averages</th>
-    <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Performance</th>
+    <th colspan="7" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Volume & Performance</th>
     <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">ETF Info</th>
   </tr>`;
-  const hdrs=['ETF','Rank','Exp. Score','30D Var','Exp. Grade','Mom. Rank','30D Var','Mom. Grade','Net 50D','Net 20D','Net 5D','Net Close 5D','Acc. Grade','ATR 5%','ATR Ratio','EMA20%','SMA50%','Perf 1D','Perf 1M','Perf 3M','Annual','Operable','AUM','Avg Vol $','P/E','Comp','Exp Ratio'];
+  // Encabezados en dos líneas (<br>): con 30 columnas en una sola línea la tabla
+  // mide ~1916px y no entra en el ancho de la página (1714px útiles); así ~1556px.
+  const hdrs=['ETF','Rank','Exp.<br>Score','30D<br>Var','Exp.<br>Grade','Mom.<br>Rank','30D<br>Var','Mom.<br>Grade','Net<br>50D','Net<br>20D','Net<br>5D','Net<br>1D','Net Close<br>5D','Acc.<br>Grade','ATR%<br>5D','ATR<br>Ratio','EMA20%','SMA50%','Vol<br>Ratio','Perf<br>1D','Perf<br>1M','Perf<br>3M','Annual','% Off<br>52W High','Operable','AUM','Avg<br>Vol $','P/E','Comp','Exp<br>Ratio'];
   document.getElementById('catTabs').innerHTML=cats.map((c,i)=>`<button class="cat-tab ${{i===0?'on':''}}" onclick="swTab(this,'cp${{i}}')">${{c}}</button>`).join('');
   document.getElementById('catPanels').innerHTML=cats.map((cat,i)=>{{
     const pid=`cp${{i}}`;
     SORT_STATE[pid]={{col:1,dir:'asc'}};
     const ths=hdrs.map((h,ci)=>{{
       const cls=ci===0?'':' class="r"';
-      const bl=(ci===5||ci===8||ci===13||ci===17||ci===22)?' style="border-left:1px solid var(--rule2)"':'';
+      const bl=(ci===5||ci===8||ci===14||ci===18||ci===25)?' style="border-left:1px solid var(--rule2)"':'';
       const s=(ci>0&&h!=='Comp')?`onclick="sortTable('${{pid}}','${{cat}}',${{ci}})"` :'';
       return`<th${{cls}} ${{s}}${{bl}}>${{h}}${{ci===1?' ▲':''}}</th>`;
     }}).join('');
