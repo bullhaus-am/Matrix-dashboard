@@ -1,0 +1,185 @@
+{
+ "session": "2026-11-23",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 70.6,
+  "usage": {
+   "input_tokens": 34895,
+   "output_tokens": 6185,
+   "cache_creation_input_tokens": 4718,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.2869
+  },
+  "generated_at": "2026-11-24T04:42:27",
+  "source": "api"
+ },
+ "output": {
+  "headline": "La Matrix sube de -9 a -7 por motivos equivocados: IVV/GSG (86, a un paso de Bullish) y RSPD/IDU volvieron a Neutral porque se desploman commodities y utilities no acompañan, mientras el Trend Score cae a 20% al perder la MA100 momentum del IVV y Small vs Large. Luz roja sigue en pie.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "red",
+   "size_multiplier": "0",
+   "tilt_long": [
+    "XLP",
+    "SPLV",
+    "RSPS",
+    "IHI",
+    "IAK",
+    "INDA",
+    "ITB"
+   ],
+   "tilt_avoid": [
+    "FFTY",
+    "ARKK",
+    "MTUM",
+    "SOXX",
+    "XLK",
+    "IGV",
+    "XLI",
+    "SLV",
+    "GDX",
+    "GLD",
+    "CPER",
+    "EEM",
+    "ARGT",
+    "GBTC",
+    "ETHE"
+   ],
+   "rationale": "Rojo por crédito y riesgo, no por breadth. HYG/IEI Bearish desde el 20/11. FFTY/IVV Bearish 96 sesiones. ARKK/IVV Bearish 16 sesiones con net20 -4. Small vs Large retrocedió a 48 en la banda y perdió su punto de Trend. El único risk pair Bullish, QQQJ/QQQ, refleja a QQQ cayendo (-8.27% vs SMA50), no a QQQJ liderando (-5.44%). IVV tiene atr_ratio 2.157, en plena expansión de volatilidad. Los sectores SPDR sobre SMA50 subieron a 45%, pero sobre EMA20 hay solo 18%, con Style en 0% y Country en 5%: es rebote de defensivos, no ampliación."
+  },
+  "regime_read": "Bonds día 16 contra un promedio de 70 para Bonds (23% del ciclo); 35 sesiones seguidas bajo 70% y 0 a favor, así que el contador hacia Stocks ni arrancó: aun con 70% mañana, el flip no llega antes de 20 sesiones. Para volver a 70% faltan 5 de los 7 puntos perdidos: IVV sobre MA100 (2, hoy Bearish fuera de banda y -4.88% bajo SMA50), MA100 momentum (1, perdido hoy), HYG/IEI (Bearish), Small vs Large (48 en la banda, el más cercano) y RSPD/IDU (31): es un reseteo de semanas, no de días. Los 5 análogos estaban en Bonds y ninguno flipeó en 20 sesiones; la mediana del IVV a 20 fue -3.49% con solo 20% positivos. El más cercano, 2008-08-27 (distancia 2.545, 11 pares), dio -5.34% con drawdown de -9.49%. El único con los 17 pares, 2022-07-15, dio +10.88%: la distribución es bimodal y no justifica un short de índice.",
+  "insights": [
+   {
+    "title": "Los dos únicos puntos de Trend que quedan son activos reales cayendo, no acciones subiendo",
+    "thesis": "El Trend Score de 20% se sostiene solo con IVV/GLD (Bullish 10 sesiones) e IVV/GSG (punto recuperado hoy, Neutral en 86, cerca del borde Bullish). Los dos denominadores se derrumban: GSG -15.2% en 1m, GLD -10.89% vs SMA50 con net50 -5. El IVV en sí cayó -4.95% en 1m. Si IVV/GSG pasa a Bullish, la Matrix va a -6 sin una sola mejora en apetito de riesgo. Es la extensión del tema anterior sobre el oro: ahora contagia a commodities amplios y energía (XLE -13.64% 1m, IEO -17.22%). El rank por cx todavía pone a XLE 4 e IEO 3, pero es inercia de 91 sesiones: el precio ya los sacó.",
+    "evidence": [
+     "IVV/GSG Neutral 86, era 10 hace 5 sesiones, flip hoy",
+     "IVV/GLD Bullish 10 sesiones; GLD vs_sma50 -10.89",
+     "GSG m1 -15.2, net20 -3",
+     "XLE rank 4 pero vs_sma50 -7.28, net20 -3",
+     "SLV/GLD 1m diff -10.98"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLE",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Rank alto por inercia; distribución y -7.28% bajo SMA50."
+     },
+     {
+      "ticker": "GSG",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Su caída es lo que mejora IVV/GSG, no te ofrece entrada."
+     },
+     {
+      "ticker": "GDX",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "-14.86% vs SMA50, net50 -7."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "Que IVV/GSG flipee a Bullish con el IVV recuperando su MA100 (S&P Momentum a Neutral) en vez de con GSG en mínimos.",
+    "status": "changed"
+   },
+   {
+    "title": "El IVV perdió la pendiente de su MA100 y Small vs Large devolvió el rebote: el Bonds se profundiza",
+    "thesis": "Hoy cambiaron dos componentes en contra: la MA100 momentum del IVV pasó a 0 (la MA100 ya cae contra 10 sesiones atrás) y Small vs Large volvió a 0. El Trend Score toca 20%, el mínimo de 60 sesiones. En la nota del 20/11 Small vs Large estaba en 95, al borde Bullish. Hoy está en 48: aquel avance era megacap cayendo, y al frenar esa caída el ratio se desinfló. Con la MA100 bajando, cualquier rebote del IVV hacia la media se encuentra con una media descendente: es resistencia, no soporte. Para breakouts, eso significa que las rupturas en nombres de beta van contra una tendencia primaria que acaba de girar.",
+    "evidence": [
+     "IVV MA100 momentum: 1 hace 5 sesiones, 0 hoy",
+     "Small vs Large: band 48, componente en 0 desde hoy",
+     "Trend 20% = mínimo 60d; máximo 60d 70%",
+     "IVV atr_ratio 2.157, vs_ema20 -2.5",
+     "MTUM -13.07% vs SMA50, IWC -8.89%"
+    ],
+    "instruments": [
+     {
+      "ticker": "IVV",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "No trade direccional: los análogos van de -8.36% a +10.88% a 20 sesiones."
+     },
+     {
+      "ticker": "IWC",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Micro caps rank 116, climb30 -35."
+     },
+     {
+      "ticker": "MTUM",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "Momentum roto, net20 -3."
+     }
+    ],
+    "conviction": "high",
+    "invalidation": "Que la MA100 momentum recupere el punto y Small vs Large cruce el borde Bullish con HYG/IEI de vuelta en Neutral.",
+    "status": "new"
+   },
+   {
+    "title": "Lo que acumula sigue siendo defensivo y sensible a tasa; ITB se suma",
+    "thesis": "Sigue en pie: el liderazgo con acumulación es estrecho y defensivo. XLP (rank 9, climb30 72, net50 4), SPLV (climb30 71), RSPS (climb30 62) e IHI (+4.28% vs SMA50) siguen arriba, junto con INDA (net20 3, +7.66% vs SMA50). La novedad es ITB: net50 5, net20 2 y +3.6% vs SMA50, consistente con la duración funcionando (TLT +2.39% vs SMA50, IVV/TLT Bearish desde el 17/11). RSPD/IDU volvió a Neutral, pero en 31, más cerca del borde Bearish, y con IDU en climb30 79: no es rotación a cíclicos. Salud grande (XLV, IYH) encabeza el rank pero ya muestra net5 -1 y queda bajo su EMA20.",
+    "evidence": [
+     "XLP net50 4, vs_sma50 4.52",
+     "ITB net50 5, net20 2, vs_sma50 3.6",
+     "INDA net20 3, vs_sma50 7.66",
+     "TLT vs_sma50 2.39; TLT-SHY 1m +0.45",
+     "RSPD/IDU Neutral 31, era 45 hace 5 sesiones",
+     "XLV vs_ema20 -1.62, net5 -1"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLP",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Candidato a 0.5x solo si la luz pasa a amarillo."
+     },
+     {
+      "ticker": "ITB",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Acumulación más limpia del día; depende de tasas."
+     },
+     {
+      "ticker": "INDA",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "Única región con acumulación; Country tiene 5% sobre SMA50."
+     },
+     {
+      "ticker": "TLT",
+      "direction": "long",
+      "horizon": "weeks",
+      "note": "Duración nominal coherente con Bonds; se invalida si TLT pierde la SMA50."
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "Que XLP/SPLV pierdan su EMA20 con distribución o que TIP-IEF se dé vuelta a positivo, señal de inflación en vez de desinflación de reales.",
+    "status": "continuing"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "Stocks vs Commodities (IVV/GSG)",
+    "current": "Neutral, band_position 86, near Bullish edge",
+    "trigger": "Cruce de 100 a Bullish (Matrix a -6)",
+    "implication": "No subas tamaño: es GSG cayendo. Pasá a amarillo 0.5x en XLP/ITB/INDA solo si el mismo día HYG/IEI vuelve a Neutral; si no, seguí en 0."
+   }
+  ],
+  "contradictions": [
+   "La Matrix mejora de -9 a -7 y los sectores SPDR sobre SMA50 suben a 45%, pero el Trend Score cae a 20% y pierde la pendiente de la MA100 del IVV. Confío en el Trend: los dos flips de la Matrix vienen de denominadores en caída (GSG) o de un Neutral en 31 cerca del borde Bearish (RSPD/IDU), mientras el crédito (HYG/IEI) y los risk pairs (FFTY, ARKK) siguen Bearish."
+  ],
+  "blind_spots": "Un shock de oferta o de demanda en energía, o un giro de la Fed, puede revertir de golpe GSG y GLD y borrar los únicos dos puntos de Trend que quedan, sin que el modelo vea el porqué.",
+  "changes_vs_previous": "Desde la nota del 20/11: Trend 30% a 20% por la pérdida de MA100 momentum y de Small vs Large, este último de 95 a 48 en la banda. La Matrix pasó de -9 a -7 porque RSPD/IDU volvió a Neutral (31) e IVV/GSG a Neutral (86, near Bullish edge). Los sectores SPDR sobre SMA50 subieron de 27% a 45%. ITB se agrega como acumulación nueva. La luz roja se mantiene.",
+  "dashboard_one_liner": "Bonds día 16/70. Trend 20%: perdió MA100 momentum y Small vs Large. Matrix -7 mejora por commodities cayendo, no por riesgo. HYG/IEI Bearish. Luz roja, 0x. Vigilar IVV/GSG en 86."
+ }
+}
