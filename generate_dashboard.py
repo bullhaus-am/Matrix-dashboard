@@ -1326,6 +1326,26 @@ table.etf tr.wl-end td{{padding:0;height:0;border-bottom:2px solid rgba(245,158,
 .etf-section.d14 .rb{{padding:1px 4px;font-size:8px}}
 .etf-section.d14 .comp-btn{{padding:2px 4px}}
 .etf-section.d14 .comp-btn svg{{width:13px;height:13px}}
+/* ── Anchos por sección ──────────────────────────────────────────────────────
+   Las columnas de un mismo grupo comparten ancho (antes Net Close 5D medía el
+   doble que las otras Net: su encabezado en una línea y el título del grupo,
+   que fuerza un ancho mínimo, se repartían de forma desigual). Cada valor es
+   el contenido más ancho de la sección, medido; si un dato no entra, la
+   columna crece sola (layout auto: nunca recorta). Quedan aparte, por ser
+   otro tipo de celda: Operable (pastilla) y P/E + Comp (dato corto e ícono).
+   Suma: ~1605px en 27" (entran 1714) y ~1421px en 14" (entran 1431 a 1512). */
+table.etf col.w-er,table.etf col.w-mr,table.etf col.w-ad{{width:42px}}   /* 30D Var · Grade · Mom. Rank · Net × 5 · Acc. Grade */
+table.etf col.w-vm,table.etf col.w-in{{width:57px}}                       /* ATR% · ATR Ratio · EMA20% · SMA50% — AUM · Avg Vol $ · Exp Ratio */
+table.etf col.w-pf{{width:50px}}                                          /* Vol Ratio · Perf 1D/1M/3M · Annual · % Off 52W High */
+table.etf col.w-op{{width:59px}}                                          /* Operable */
+table.etf col.w-ic{{width:37px}}                                          /* P/E · Comp */
+.etf-section.d14 table.etf col.w-er,.etf-section.d14 table.etf col.w-ad{{width:36px}}
+.etf-section.d14 table.etf col.w-mr{{width:42px}}                         /* piso del título "Momentum Ranking" */
+.etf-section.d14 table.etf col.w-vm{{width:54px}}                         /* piso del título "Volatility & Moving Averages" */
+.etf-section.d14 table.etf col.w-pf{{width:44px}}
+.etf-section.d14 table.etf col.w-op{{width:52px}}
+.etf-section.d14 table.etf col.w-in{{width:51px}}
+.etf-section.d14 table.etf col.w-ic{{width:32px}}
 .cx-cell{{display:flex;align-items:center;gap:8px;justify-content:flex-end}}
 .cx-bar{{width:40px;height:3px;border-radius:2px;background:var(--rule2);overflow:hidden}}
 .cx-fill{{height:100%;border-radius:2px}}
@@ -1920,9 +1940,16 @@ function sortTable(pid,cat,col){{
     <th colspan="7" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">Volume & Performance</th>
     <th colspan="5" style="background:var(--bg3);text-align:center;color:rgba(0,229,204,.85);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:1px solid var(--rule2);border-bottom:2px solid rgba(0,229,204,.12)">ETF Info</th>
   </tr>`;
-  // Encabezados en dos líneas (<br>): con 30 columnas en una sola línea la tabla
-  // mide ~1916px y no entra en el ancho de la página (1714px útiles); así ~1556px.
-  const hdrs=['ETF','Rank','Exp.<br>Score','30D<br>Var','Exp.<br>Grade','Mom.<br>Rank','30D<br>Var','Mom.<br>Grade','Net<br>50D','Net<br>20D','Net<br>5D','Net<br>1D','Net Close<br>5D','Acc.<br>Grade','ATR%<br>5D','ATR<br>Ratio','EMA20%','SMA50%','Vol<br>Ratio','Perf<br>1D','Perf<br>1M','Perf<br>3M','Annual','% Off<br>52W High','Operable','AUM','Avg<br>Vol $','P/E','Comp','Exp<br>Ratio'];
+  // Encabezados partidos con <br>: con 30 columnas en una sola línea la tabla
+  // mide ~1916px y no entra en el ancho de la página (1714px útiles). 'Net Close
+  // 5D' y '% Off 52W High' van en tres líneas para no ser más anchas que sus
+  // vecinas de sección.
+  const hdrs=['ETF','Rank','Exp.<br>Score','30D<br>Var','Exp.<br>Grade','Mom.<br>Rank','30D<br>Var','Mom.<br>Grade','Net<br>50D','Net<br>20D','Net<br>5D','Net<br>1D','Net<br>Close<br>5D','Acc.<br>Grade','ATR%<br>5D','ATR<br>Ratio','EMA20%','SMA50%','Vol<br>Ratio','Perf<br>1D','Perf<br>1M','Perf<br>3M','Annual','% Off<br>52W<br>High','Operable','AUM','Avg<br>Vol $','P/E','Comp','Exp<br>Ratio'];
+  // Ancho por columna: las de una misma sección comparten clase (ver "Anchos por
+  // sección" en el CSS). ETF, Rank y Exp. Score quedan sin clase: son las que
+  // absorben el ancho que sobra.
+  const colw=['','','','w-er','w-er','w-mr','w-mr','w-mr','w-ad','w-ad','w-ad','w-ad','w-ad','w-ad','w-vm','w-vm','w-vm','w-vm','w-pf','w-pf','w-pf','w-pf','w-pf','w-pf','w-op','w-in','w-in','w-ic','w-ic','w-in'];
+  const colgroup='<colgroup>'+colw.map(c=>`<col${{c?` class="${{c}}"`:''}}>`).join('')+'</colgroup>';
   document.getElementById('catTabs').innerHTML=cats.map((c,i)=>`<button class="cat-tab ${{i===0?'on':''}}" onclick="swTab(this,'cp${{i}}')">${{c}}</button>`).join('');
   document.getElementById('catPanels').innerHTML=cats.map((cat,i)=>{{
     const pid=`cp${{i}}`;
@@ -1933,7 +1960,7 @@ function sortTable(pid,cat,col){{
       const s=(ci>0&&h!=='Comp')?`onclick="sortTable('${{pid}}','${{cat}}',${{ci}})"` :'';
       return`<th${{cls}} ${{s}}${{bl}}>${{h}}${{ci===1?' ▲':''}}</th>`;
     }}).join('');
-    return`<div id="${{pid}}" class="cat-panel ${{i===0?'on':''}}"><table class="etf"><thead>${{grpHdr}}<tr>${{ths}}</tr></thead><tbody>${{buildRows(cat,1,'asc')}}</tbody></table></div>`;
+    return`<div id="${{pid}}" class="cat-panel ${{i===0?'on':''}}"><table class="etf">${{colgroup}}<thead>${{grpHdr}}<tr>${{ths}}</tr></thead><tbody>${{buildRows(cat,1,'asc')}}</tbody></table></div>`;
   }}).join('');
   bindFilters();
   const cnt=document.getElementById('fltCount');

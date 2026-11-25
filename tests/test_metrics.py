@@ -381,3 +381,35 @@ def test_etf_table_structure_is_consistent():
     seps = [int(x) for x in re.search(r"const bl=\((.*?)\)\?", html).group(1).replace("ci===", "").split("||")]
     starts = [sum(spans[:i]) for i in range(2, len(spans))]      # desde Momentum Ranking
     assert seps == starts
+
+
+def test_columns_in_a_section_share_one_width_class():
+    """Anchos por sección (2026-11-25): dentro de cada grupo de la tabla las
+    columnas llevan la misma clase de ancho, y cada clase tiene su regla CSS en
+    27" y en 14". Evita que una columna (Net Close 5D) vuelva a medir el doble
+    que sus vecinas."""
+    import re
+    _, html = _table_fixture_html()
+    colw = [c.strip().strip("'") for c in re.search(r"const colw=\[(.*?)\];", html, re.S).group(1).split(",")]
+    hdrs = re.findall(r"'([^']*)'", re.search(r"const hdrs=\[(.*?)\];", html, re.S).group(1))
+    assert len(colw) == len(hdrs) == 30
+    assert '<table class="etf">${colgroup}<thead>' in html
+
+    by_label = dict(zip([h.replace("<br>", " ") for h in hdrs], colw))
+    assert colw[:3] == ["", "", ""]                               # ETF, Rank, Exp. Score absorben el sobrante
+    assert colw[3:5] == ["w-er"] * 2                              # Exp. Regression: 30D Var, Exp. Grade
+    assert colw[5:8] == ["w-mr"] * 3                              # Momentum Ranking
+    assert colw[8:14] == ["w-ad"] * 6                             # Accumulation / Distribution, completa
+    assert by_label["Net Close 5D"] == by_label["Net 1D"] == by_label["Acc. Grade"]
+    assert colw[14:18] == ["w-vm"] * 4                            # Volatility & Moving Averages
+    assert colw[18:24] == ["w-pf"] * 6 and colw[24] == "w-op"     # Volume & Performance + Operable
+    assert by_label["% Off 52W High"] == by_label["Perf 1D"] == by_label["Vol Ratio"]
+    assert colw[25:] == ["w-in", "w-in", "w-ic", "w-ic", "w-in"]  # ETF Info
+
+    for cls in sorted(set(colw) - {""}):
+        assert re.search(r"(^|,)table\.etf col\.%s[,{]" % cls, html, re.M), cls              # ancho en 27"
+        assert re.search(r"\.etf-section\.d14 table\.etf col\.%s[,{]" % cls, html), cls      # y en 14"
+
+    # Los dos encabezados largos van en tres líneas: en una o dos volvían a
+    # ensanchar su columna respecto de las vecinas.
+    assert "Net<br>Close<br>5D" in hdrs and "% Off<br>52W<br>High" in hdrs
