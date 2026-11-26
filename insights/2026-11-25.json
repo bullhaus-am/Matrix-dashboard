@@ -1,0 +1,174 @@
+{
+ "session": "2026-11-25",
+ "meta": {
+  "profile": "daily",
+  "label": "nota diaria",
+  "model_requested": "claude-opus-5-5",
+  "model_served": "claude-opus-5-5",
+  "fell_back": false,
+  "effort": "medium",
+  "web_search": false,
+  "stop_reason": "end_turn",
+  "request_id": null,
+  "elapsed_s": 66.2,
+  "usage": {
+   "input_tokens": 34341,
+   "output_tokens": 7042,
+   "cache_creation_input_tokens": 4718,
+   "cache_read_input_tokens": 0,
+   "cost_usd": 0.3018
+  },
+  "generated_at": "2026-11-26T04:42:13",
+  "source": "api"
+ },
+ "output": {
+  "headline": "Small Cap vs Large Cap pasa a Bullish y la Matrix mejora a -7, pero el Trend Score cae de 40% a 30% porque IVV/GSG pierde su MA100: la rotación es relativa contra mega-cap tech, con crédito Bearish, y la luz sigue roja.",
+  "day_type": "transition",
+  "breakout_light": {
+   "color": "red",
+   "size_multiplier": "0",
+   "tilt_long": [
+    "XLP",
+    "XLV",
+    "IHE",
+    "ITB",
+    "INDA"
+   ],
+   "tilt_avoid": [
+    "XLK",
+    "SOXX",
+    "IGV",
+    "ARKK",
+    "FFTY",
+    "MTUM",
+    "SLV",
+    "GDX",
+    "CPER",
+    "EEM",
+    "GBTC",
+    "ETHE"
+   ],
+   "rationale": "Dos de los cuatro pares de riesgo están Bullish (QQQJ/QQQ 4 sesiones, Small vs Large 1 sesión), pero los dos que miden apetito absoluto siguen Bearish: FFTY/IVV 98 sesiones y ARKK/IVV 18. HYG/IEI Bearish desde el 20-nov y HYG-IEF -2.28 en 1m: el crédito no confirma. Amplitud angosta: Country/Region 9% sobre SMA50, Style 21%, Industry 34%; solo SPDR Sectors 64%, empujado por defensivos. Bonds día 18 sin conteo hacia Stocks. Pasaría a yellow si Small vs Large sostiene Bullish 3 sesiones y HYG/IEI vuelve a Neutral."
+  },
+  "regime_read": "Bonds día 18 contra un promedio de 70 sesiones para Bonds (26% del ciclo), con 37 sesiones seguidas bajo 70% y ninguna sesión en o sobre el umbral: no hay conteo hacia Stocks. Para arrancarlo faltan 4 puntos sobre los 3 actuales. Se necesita IVV sobre su MA100 (2 pts; hoy S&P Momentum Bearish hace 8 sesiones e IVV a -5.4% de su SMA50), la pendiente de la MA100 (1 pt) y uno de IVV/GSG (Neutral en 24, el más cercano), HYG/IEI, RSPD/RSPS o IMCG/IMCV. Aun logrando eso mañana, el flip no llega antes de 20 sesiones, es decir fin de diciembre. Los 5 análogos están en Bonds y ninguno flipeó en 20 sesiones. Mediana de IVV a 20 sesiones -3.5%, solo 1 de 5 positivo (2022-07-15, +10.9%) y peor drawdown -23.6% (2008-09-15). Tres de los cinco son de 2008 con solo 11 pares comparables.",
+  "insights": [
+   {
+    "title": "Small vs Large Bullish es mega-cap cayendo, no small caps subiendo",
+    "thesis": "El flip de Small Cap vs Large Cap a Bullish y QQQJ/QQQ Bullish desde el 20-nov salen del derrumbe del liderazgo grande, no de compra de riesgo. QQQ cae -12.1% en 1m, XLK -17.8% y SOXX -24.9%, mientras QQQJ cae -6.6% e IWC -8.1%, con net20 negativo en los tres. ILCG-ILCV da -9.95 en 1m. Es la misma lectura de ayer, ahora confirmada en la Matrix: suma un punto al score sin sumar apetito. Small vs Large difiere de 4 de los 5 análogos. Solo en 2022-07-15 ese par también difería y la Matrix saltó +17 en 20 sesiones, así que es la única ventana alcista que vale vigilar. No hay trade de breakout en small caps con IWC rank 115 y ISCG rank 95.",
+    "evidence": [
+     "Small Cap vs Large Cap Neutral→Bullish 2026-11-25",
+     "QQQJ vs QQQ Bullish 4 sesiones",
+     "QQQ m1 -12.11, XLK m1 -17.78, SOXX m1 -24.87",
+     "IWC m1 -8.06 net20 -2; QQQJ net20 -2",
+     "ILCG-ILCV m1 -9.95"
+    ],
+    "instruments": [
+     {
+      "ticker": "XLK",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "net20 -4, -14.8% vs SMA50; la rotación sale de acá"
+     },
+     {
+      "ticker": "SOXX",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "m1 -24.9, el epicentro de la liquidación"
+     },
+     {
+      "ticker": "ISCV",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "+0.6% vs SMA50; único small cap sobre su media, solo si HYG/IEI vuelve a Neutral"
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "Small Cap vs Large Cap vuelve a Neutral en 1-2 sesiones (flip falso). Del otro lado, ARKK/IVV o HYG/IEI salen de Bearish, lo que convertiría la rotación en apetito real.",
+    "status": "changed"
+   },
+   {
+    "title": "IVV/GSG devuelve el punto: el único punto de activos reales que queda es IVV/GLD, y lo sostiene el oro cayendo",
+    "thesis": "Sigue en pie la lectura de ayer y se profundiza: IVV/GSG perdió su MA100 y bajó de 46 a 24 en la banda en 5 sesiones. Le costó al Trend 10 puntos. IVV/GLD sigue Bullish 12 sesiones solo porque GLD cae más que IVV (-12.0% contra -6.9% en 1m). Es un régimen de liquidación generalizada con duración como único refugio. TLT sube 81 puestos en 30 días, TLT-SHY da +0.62 en 1m y TIP-IEF -1.69: desinflación, no reflación. No hay rebote comprable en metales.",
+    "evidence": [
+     "IVV/GSG Neutral, band 24 (46 hace 5 sesiones); componente 1→0 hoy",
+     "Copper vs Gold Bearish desde 2026-11-24",
+     "SLV net50 -12, -25.6% vs SMA50",
+     "GLD -11.75% vs SMA50, net50 -5",
+     "TLT climb30 81; IVV/TLT Bearish 7 sesiones",
+     "TIP-IEF m1 -1.69"
+    ],
+    "instruments": [
+     {
+      "ticker": "SLV",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "distribución máxima del universo"
+     },
+     {
+      "ticker": "CPER",
+      "direction": "avoid",
+      "horizon": "weeks",
+      "note": "net20 -4, atr_ratio 1.6"
+     },
+     {
+      "ticker": "TLT",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "+3.0% vs SMA50 pero net50 0: tendencia sin acumulación; long solo si IVV/TLT sigue Bearish y aparece net20 positivo"
+     }
+    ],
+    "conviction": "medium",
+    "invalidation": "IVV/GSG vuelve sobre 50 en la banda, o CPER/GLD recupera Neutral.",
+    "status": "continuing"
+   },
+   {
+    "title": "La única acumulación está en defensivos, salud y vivienda",
+    "thesis": "Los pocos ETFs con tendencia y acumulación a la vez son defensivos o sensibles a tasas. XLP tiene net50 +4 y +6.3% vs SMA50, ITB net50 +6 / net20 +4 y +8.8%, INDA net50 +5 / net20 +3, IHE mom_rank 1. XLV e IYH lideran el cx pero con net20 0/-1. ITB es la traducción de acciones del bid en duración y es la única cíclica con acumulación. Con la luz roja no son breakouts para tomar hoy, son la lista para cuando pase a yellow.",
+    "evidence": [
+     "XLP rank 5, climb30 77, net50 4",
+     "ITB climb30 64, net20 4, vs_sma50 8.8",
+     "INDA m1 13.82, net20 3",
+     "IHE mom_rank 1, net20 1",
+     "XLU climb30 85 / IDU climb30 86 sin acumulación (net20 0)"
+    ],
+    "instruments": [
+     {
+      "ticker": "ITB",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "primer candidato a 0.5x si la luz pasa a yellow"
+     },
+     {
+      "ticker": "XLP",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "defensivo con acumulación; tamaño reducido incluso en yellow"
+     },
+     {
+      "ticker": "INDA",
+      "direction": "watch",
+      "horizon": "weeks",
+      "note": "única región con net20 positivo y tendencia; resto de Country/Region 9% sobre SMA50"
+     }
+    ],
+    "conviction": "low",
+    "invalidation": "ITB pierde la EMA20 (hoy +5.0%) con net5 negativo, o la duración se da vuelta (TLT bajo su EMA20).",
+    "status": "new"
+   }
+  ],
+  "watch_triggers": [
+   {
+    "signal": "Consumer Svcs vs Utils (RSPD/IDU)",
+    "current": "Neutral, band_position 85 (89 hace 5 sesiones), flag near Bullish edge",
+    "trigger": "Sobre 100 pasa a Bullish; bajo 50 pierde la MA100 y el punto de Trend",
+    "implication": "Si flipea a Bullish con Small vs Large sosteniendo Bullish y HYG/IEI saliendo de Bearish, pasar la luz a yellow 0.5x empezando por ITB/XLP. Si cae bajo 50, el Trend vuelve a 20% y el rojo se refuerza."
+   }
+  ],
+  "contradictions": [
+   "Los pares de riesgo relativo (Small vs Large Bullish, QQQJ/QQQ Bullish) contra el crédito (HYG/IEI Bearish, HYG-IEF -2.28 en 1m, EMHY -1.48% vs SMA50) y el apetito absoluto (ARKK/IVV Bearish, ARKK m1 -20.6). Confío en el crédito: los pares relativos mejoran porque cae el denominador mega-cap, mientras el high yield sigue perdiendo contra Treasuries."
+  ],
+  "blind_spots": "El modelo no ve qué está liquidando mega-cap tech y semis (XLK -17.8, SOXX -24.9 en 1m) ni que la semana de Thanksgiving tiene volumen fino: el flip de Small vs Large del día 1 y los conteos de net5 son los más expuestos a eso.",
+  "changes_vs_previous": "Trend 40%→30% porque IVV/GSG pierde su MA100 (anticipado ayer). Matrix -8→-7 por Small Cap vs Large Cap Neutral→Bullish. RSPD/IDU sigue en 85, pegado al borde Bullish. La luz sigue roja en 0. El insight de rotación pasa a changed al confirmarse en la Matrix, el de commodities sigue en pie y se agrega la lista de defensivos con acumulación.",
+  "dashboard_one_liner": "Bonds d18/70, Trend 30% (IVV/GSG pierde MA100), Matrix -7 con Small vs Large Bullish por caída mega-cap; HYG/IEI Bearish. Luz roja 0x. Gatillo: RSPD/IDU en 85."
+ }
+}
